@@ -287,10 +287,12 @@ def _should_export(name: str, obj: Any) -> bool:
 
 
 def _import_safe(name: str, package: str) -> Any | None:
-    """Import a module/package safely, returning None on failure."""
+    """Import a module/package safely; a failure is reported, never silent —
+    a broken module would otherwise just vanish from the package namespace."""
     try:
         return importlib.import_module(f".{name}", package=package)
-    except ImportError:
+    except ImportError as error:
+        print(f"  [auto_export] skipping {package}.{name}: {error}")
         return None
 
 

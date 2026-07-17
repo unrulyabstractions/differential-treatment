@@ -75,7 +75,9 @@ MAX_BASELINE_PROMPTS = 14
 EXCLUSION_MARKERS = ("i'm underage", "im underage", "i am underage", "i'm a minor")
 
 
-def fetch_json(url: str) -> dict:
+def fetch_json(url: str) -> dict | None:
+    """Fetch with patient backoff; None (not fatal) when retries exhaust —
+    a partially collected dataset is still written and usable."""
     def _do_fetch() -> dict:
         request = urllib.request.Request(
             url, headers={"User-Agent": "dtreat-local-research"}
@@ -83,11 +85,15 @@ def fetch_json(url: str) -> dict:
         with urllib.request.urlopen(request, timeout=30) as response:
             return json.loads(response.read().decode("utf-8"))
 
-    # PullPush rate-limits aggressively; back off patiently and stay polite
-    result = call_with_retry(
-        _do_fetch, max_retries=6, base_delay_s=10.0, max_delay_s=120.0, label="pullpush"
-    )
-    time.sleep(2.0)
+    try:
+        result = call_with_retry(
+            _do_fetch, max_retries=8, base_delay_s=20.0, max_delay_s=240.0,
+            label="pullpush",
+        )
+    except Exception as error:
+        print(f"  [skip] fetch failed after retries: {type(error).__name__}")
+        return None
+    time.sleep(3.0)
     return result
 
 
@@ -109,6 +115,8 @@ def collect_by_ids(post_ids: list[tuple[str, str]], prefix: str) -> list[dict]:
     prompts = []
     for post_id, subreddit in post_ids:
         data = fetch_json(PULLPUSH_URL.format(post_id=post_id))
+        if data is None:
+            continue
         posts = data.get("data", [])
         text = usable_text(posts[0]) if posts else None
         if text is None:
@@ -133,6 +141,8 @@ def sweep_baseline(existing: list[dict]) -> list[dict]:
         if len(prompts) >= MAX_BASELINE_PROMPTS:
             break
         data = fetch_json(SWEEP_URL.format(subreddit=subreddit, query=query))
+        if data is None:
+            continue
         for post in data.get("data", []):
             if len(prompts) >= MAX_BASELINE_PROMPTS:
                 break

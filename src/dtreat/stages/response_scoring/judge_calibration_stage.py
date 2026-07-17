@@ -17,11 +17,11 @@ from pathlib import Path
 
 from dtreat.common.base_schema import BaseSchema
 from dtreat.common.console_logging import log, log_kv
+from dtreat.common.experiment_config import ExperimentConfig
 from dtreat.common.file_io import load_json, load_jsonl, save_json
 from dtreat.common.random_seed import derive_seed
+from dtreat.common.run_directory_paths import RunDirectoryPaths
 from dtreat.llm.chat_client import ChatClient
-from dtreat.pipeline.experiment_config import ExperimentConfig
-from dtreat.pipeline.run_directory_paths import RunDirectoryPaths
 from dtreat.stages.hypothesis_generation.hypothesis_schemas import HypothesisSet
 from dtreat.stages.response_collection.response_record_schemas import ResponseRecord
 
@@ -100,7 +100,15 @@ def run_judge_calibration(
     judge_models = config.judge_panel()
 
     report = JudgeCalibrationReport(judge_models=judge_models)
-    if len(judge_models) >= 2:
+    has_per_judge_verdicts = any(record.verdicts_by_judge for record in scored)
+    if not has_per_judge_verdicts:
+        # Old artifacts (pre-panel) carry only aggregated verdicts; computing
+        # agreement/consistency against them would report fake perfection.
+        report.notes.append(
+            "Scored artifacts carry no per-judge verdicts (produced before panel "
+            "support). Re-run `dtreat score` to enable calibration."
+        )
+    elif len(judge_models) >= 2:
         report.pair_agreements = _pairwise_agreement(scored, judge_models, axis_ids)
         report.axis_panel_agreements = _panel_agreement(scored, judge_models, axis_ids)
     else:
@@ -108,7 +116,7 @@ def run_judge_calibration(
             "Single-judge run: inter-judge agreement unavailable. Add judge_models "
             "to the config for panel calibration."
         )
-    if consistency_sample > 0:
+    if consistency_sample > 0 and has_per_judge_verdicts:
         report.consistency = _self_consistency(
             config, paths, hypothesis_set, scored, consistency_sample
         )

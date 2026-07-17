@@ -32,13 +32,17 @@ def run_c2st(
     if n_samples < 10 or n_classes < 2:
         return None
 
-    features_train, features_test, labels_train, labels_test = train_test_split(
-        feature_matrix,
-        is_target,
-        test_size=test_fraction,
-        random_state=seed,
-        stratify=is_target,
-    )
+    try:
+        features_train, features_test, labels_train, labels_test = train_test_split(
+            feature_matrix,
+            is_target,
+            test_size=test_fraction,
+            random_state=seed,
+            stratify=is_target,
+        )
+    except ValueError:
+        # stratified split impossible (tiny minority class) — C2ST undefined
+        return None
     if len(np.unique(labels_train)) < 2 or len(labels_test) == 0:
         return None
 

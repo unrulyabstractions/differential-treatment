@@ -10,6 +10,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from dtreat.common.experiment_config import ExperimentConfig
+from dtreat.common.run_directory_paths import RunDirectoryPaths
 from dtreat.stages.hypothesis_generation.hypothesis_generation_stage import (
     run_hypothesis_generation,
 )
@@ -21,9 +23,6 @@ from dtreat.stages.response_scoring.response_scoring_stage import run_response_s
 from dtreat.stages.treatment_analysis.treatment_analysis_stage import (
     run_treatment_analysis,
 )
-
-from .experiment_config import ExperimentConfig
-from .run_directory_paths import RunDirectoryPaths
 
 
 @dataclass

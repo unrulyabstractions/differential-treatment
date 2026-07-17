@@ -10,12 +10,12 @@ from __future__ import annotations
 import re
 
 from dtreat.common.console_logging import log
+from dtreat.common.experiment_config import ExperimentConfig
 from dtreat.common.file_io import save_json
 from dtreat.common.json_text_extraction import extract_first_json_array
+from dtreat.common.run_directory_paths import RunDirectoryPaths
 from dtreat.llm.chat_client import ChatClient
 from dtreat.llm.chat_types import ChatMessage
-from dtreat.pipeline.experiment_config import ExperimentConfig
-from dtreat.pipeline.run_directory_paths import RunDirectoryPaths
 
 from .helper_prompt_builder import build_helper_messages
 from .hypothesis_schemas import HypothesisAxis, HypothesisSet
@@ -109,7 +109,8 @@ def run_hypothesis_generation(
     seed_axes = [
         _seed_hypothesis_axis(text, index) for index, text in enumerate(config.seed_hypotheses)
     ]
-    axes = dedupe_axes(helper_axes + seed_axes)[: config.max_axes]
+    # Seeds are the practitioner's explicit asks — they survive dedup and cap
+    axes = dedupe_axes(seed_axes + helper_axes)[: config.max_axes]
 
     hypothesis_set = HypothesisSet(
         deployment_context=config.deployment_context,

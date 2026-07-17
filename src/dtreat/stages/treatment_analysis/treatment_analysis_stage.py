@@ -17,9 +17,9 @@ from dtreat.common.discrete_information import (
     kl_divergence_bits,
     normalize_profile,
 )
+from dtreat.common.experiment_config import ExperimentConfig
 from dtreat.common.file_io import load_jsonl, save_json
-from dtreat.pipeline.experiment_config import ExperimentConfig
-from dtreat.pipeline.run_directory_paths import RunDirectoryPaths
+from dtreat.common.run_directory_paths import RunDirectoryPaths
 from dtreat.stages.hypothesis_generation.hypothesis_schemas import HypothesisSet
 from dtreat.stages.prompt_distinguishability.distinguish_bridge_stage import (
     load_input_report_if_present,

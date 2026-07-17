@@ -14,11 +14,11 @@ from __future__ import annotations
 
 import re
 
+from dtreat.common.experiment_config import ExperimentConfig
 from dtreat.common.json_text_extraction import extract_first_json_object
 from dtreat.llm.chat_client import ChatClient
 from dtreat.llm.chat_types import ChatMessage
 from dtreat.llm.parallel_chat_execution import ChatJob, execute_chat_jobs
-from dtreat.pipeline.experiment_config import ExperimentConfig
 
 from .prompt_set_schemas import CommunityPromptFile
 

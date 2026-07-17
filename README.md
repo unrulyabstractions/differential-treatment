@@ -70,10 +70,11 @@ out/runs/<run_name>/
 ├── experiment_config.json        # provenance snapshot
 ├── llm_cache/                    # response cache → free stage resumability
 ├── llm_trace.jsonl               # every LLM call: tokens, cost, latency, refusals
-├── stage1_prompts/prompt_sets.json
+├── stage1_prompts/{prompt_sets.json, input_distinguishability.json}
 ├── stage2_hypotheses/hypothesis_set.json
 ├── stage3_responses/{responses.jsonl, collection_manifest.json}
-├── stage4_scores/{scored_responses.jsonl, scoring_manifest.json}
+├── stage4_scores/{scored_responses.jsonl, scoring_manifest.json,
+│                  judge_calibration.json}
 ├── stage5_analysis/{analysis_report.json, analysis_summary.md}
 └── quarantine/                   # failed calls, never silently dropped
 ```
@@ -123,9 +124,10 @@ src/dtreat/
 ├── pipeline/      # experiment config, run-dir layout, stage registry, CLI
 ├── diagnostics/   # inspect / validate / trace / estimate-cost
 └── server/        # FastAPI debug server + static UI
-configs/           # mock_biased, mock_null, live_smoke experiment configs
-data/prompts/      # generated fictional case-study prompt sets
-scripts/           # generate_case_study_prompts.py
+distinguish/       # vendored prompt-distinguishability project (input side)
+configs/           # mock_biased, mock_null, mock_panel, live_smoke, real_reddit
+data/prompts/      # generated case-study sets + real_* (LOCAL ONLY, gitignored)
+scripts/           # generate_case_study_prompts.py, collect_reddit_prompts.py
 tests/             # unit / integration / live  (L0–L2)
 ```
 

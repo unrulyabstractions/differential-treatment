@@ -12,6 +12,7 @@ times cheaper), or one call per (response, axis).
 from __future__ import annotations
 
 from dtreat.common.console_logging import log, log_kv
+from dtreat.common.experiment_config import ExperimentConfig
 from dtreat.common.file_io import load_jsonl, save_json, save_jsonl
 from dtreat.common.judge_protocol import (
     JUDGE_SYSTEM_PROMPT,
@@ -21,11 +22,10 @@ from dtreat.common.judge_protocol import (
     parse_per_response_verdicts,
 )
 from dtreat.common.random_seed import derive_seed
+from dtreat.common.run_directory_paths import RunDirectoryPaths
 from dtreat.llm.chat_client import ChatClient
 from dtreat.llm.chat_types import ChatFailure, ChatMessage
 from dtreat.llm.parallel_chat_execution import ChatJob, execute_chat_jobs
-from dtreat.pipeline.experiment_config import ExperimentConfig
-from dtreat.pipeline.run_directory_paths import RunDirectoryPaths
 from dtreat.stages.hypothesis_generation.hypothesis_schemas import HypothesisSet
 from dtreat.stages.response_collection.response_record_schemas import ResponseRecord
 
@@ -44,9 +44,13 @@ def run_response_scoring(
     axis_ids = hypothesis_set.axis_ids()
     judge_models = config.judge_panel()
 
+    # Records with no verdicts at all mean every judge call failed or was
+    # unparseable — treat them as not-yet-scored so a transient failure never
+    # permanently removes a response from the audit.
     existing = {
         record["response_id"]: ScoredResponse.from_dict(record)
         for record in load_jsonl(paths.scored_responses_path, default=[])
+        if record.get("verdicts") or any(record.get("verdicts_by_judge", {}).values())
     }
 
     # Refused/empty responses are not judged: they carry no behavior to score.
@@ -83,20 +87,26 @@ def run_response_scoring(
         stats_totals["output_tokens"] += client.stats.output_tokens
         stats_totals["cost_usd"] += client.stats.cost_usd
 
+    # Responses where every judge call failed outright produce no record at
+    # all (their failures are quarantined); they will be re-judged on re-run.
     scored_new = [
         _aggregate_scored(record, axis_ids, judge_models, per_judge_verdicts,
                           raw_replies, config.judge_aggregation)
         for record in to_score
+        if any(
+            record.response_id in per_judge_verdicts[judge_model]
+            for judge_model in judge_models
+        )
     ]
 
     scored = {**existing, **{s.response_id: s for s in scored_new}}
     ordered = sorted(scored.values(), key=lambda s: s.response_id)
     save_jsonl([record.to_dict() for record in ordered], paths.scored_responses_path)
+    quarantine_file = paths.quarantine_path("stage4_scores")
     if all_failures:
-        save_jsonl(
-            [failure.to_dict() for failure in all_failures],
-            paths.quarantine_path("stage4_scores"),
-        )
+        save_jsonl([failure.to_dict() for failure in all_failures], quarantine_file)
+    elif quarantine_file.exists():
+        quarantine_file.unlink()  # clean re-run: drop stale failure reports
 
     manifest = ScoringManifest(
         judge_models=judge_models,

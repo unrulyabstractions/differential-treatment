@@ -51,7 +51,3 @@ def resolve_backend(model_spec: str) -> tuple[ChatBackend, str]:
         "Use an explicit 'anthropic:<model>', 'openai:<model>', or 'mock:<role>' spec."
     )
 
-
-def reset_backend_cache() -> None:
-    """Drop cached backend clients (used by tests)."""
-    _BACKEND_CACHE.clear()

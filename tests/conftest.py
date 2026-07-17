@@ -12,9 +12,9 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 from generate_case_study_prompts import build_prompt_files  # noqa: E402
 
+from dtreat.common.experiment_config import CommunitySpec, ExperimentConfig  # noqa: E402
 from dtreat.common.file_io import save_json  # noqa: E402
-from dtreat.pipeline.experiment_config import CommunitySpec, ExperimentConfig  # noqa: E402
-from dtreat.pipeline.run_directory_paths import RunDirectoryPaths  # noqa: E402
+from dtreat.common.run_directory_paths import RunDirectoryPaths  # noqa: E402
 
 
 @pytest.fixture

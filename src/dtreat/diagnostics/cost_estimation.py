@@ -7,9 +7,9 @@ actual prompt files, so the order of magnitude is trustworthy before spending.
 from __future__ import annotations
 
 from dtreat.common.console_logging import log, log_header, log_kv
+from dtreat.common.experiment_config import ExperimentConfig
 from dtreat.llm.chat_types import ChatUsage
 from dtreat.llm.llm_pricing import cost_usd, is_priced_model
-from dtreat.pipeline.experiment_config import ExperimentConfig
 from dtreat.stages.prompt_collection.prompt_collection_stage import (
     load_community_prompt_file,
 )
@@ -23,8 +23,13 @@ def _words(text: str) -> int:
 
 def print_cost_estimate(config: ExperimentConfig) -> int:
     """Estimate stage-by-stage LLM usage for this config."""
-    target_set = load_community_prompt_file(config.target_community.prompt_file)
-    baseline_set = load_community_prompt_file(config.baseline_community.prompt_file)
+    require_instructions = config.annotate_instructions == "provided"
+    target_set = load_community_prompt_file(
+        config.target_community.prompt_file, require_instructions
+    )
+    baseline_set = load_community_prompt_file(
+        config.baseline_community.prompt_file, require_instructions
+    )
     prompts = target_set.prompts + baseline_set.prompts
     n_prompts = len(prompts)
     n_responses = n_prompts * config.samples_per_prompt

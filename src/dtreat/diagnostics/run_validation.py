@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dtreat.common.console_logging import log, log_header
 from dtreat.common.file_io import load_json, load_jsonl
-from dtreat.pipeline.run_directory_paths import RunDirectoryPaths
+from dtreat.common.run_directory_paths import RunDirectoryPaths
 
 
 def print_run_status(paths: RunDirectoryPaths) -> int:

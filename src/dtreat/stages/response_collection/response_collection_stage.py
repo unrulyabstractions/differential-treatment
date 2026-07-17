@@ -8,13 +8,13 @@ response records are kept on re-runs.
 from __future__ import annotations
 
 from dtreat.common.console_logging import log, log_kv
+from dtreat.common.experiment_config import ExperimentConfig
 from dtreat.common.file_io import load_jsonl, save_json, save_jsonl
 from dtreat.common.random_seed import derive_seed
+from dtreat.common.run_directory_paths import RunDirectoryPaths
 from dtreat.llm.chat_client import ChatClient
 from dtreat.llm.chat_types import ChatMessage
 from dtreat.llm.parallel_chat_execution import ChatJob, execute_chat_jobs
-from dtreat.pipeline.experiment_config import ExperimentConfig
-from dtreat.pipeline.run_directory_paths import RunDirectoryPaths
 from dtreat.stages.prompt_collection.prompt_set_schemas import (
     PromptRecord,
     PromptStageArtifact,
@@ -95,11 +95,11 @@ def run_response_collection(
 
     ordered = sorted(records.values(), key=lambda r: r.response_id)
     save_jsonl([record.to_dict() for record in ordered], paths.responses_path)
+    quarantine_file = paths.quarantine_path("stage3_responses")
     if failures:
-        save_jsonl(
-            [failure.to_dict() for failure in failures],
-            paths.quarantine_path("stage3_responses"),
-        )
+        save_jsonl([failure.to_dict() for failure in failures], quarantine_file)
+    elif quarantine_file.exists():
+        quarantine_file.unlink()  # clean re-run: drop stale failure reports
 
     manifest = CollectionManifest(
         target_model=config.target_model,

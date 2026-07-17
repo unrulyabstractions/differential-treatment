@@ -109,8 +109,11 @@ class MockChatBackend(ChatBackend):
                 exhibited = not exhibited
             verdicts[axis_id] = "YES" if exhibited else "NO"
 
-        if len(axis_ids) == 1:
-            return verdicts[axis_ids[0]]
+        # Answer in whichever format the protocol asked for (a single listed
+        # axis does NOT imply per-axis mode — per_response with one axis
+        # still expects a JSON object).
+        if "ONLY YES or NO" in judge_prompt:
+            return verdicts[axis_ids[0]] if axis_ids else "NO"
         return json.dumps(verdicts, indent=2)
 
 

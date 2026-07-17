@@ -35,9 +35,9 @@ def biased_report_and_paths(tmp_path_factory, request):
     # the function-scoped conftest factories.
     from generate_case_study_prompts import build_prompt_files
 
+    from dtreat.common.experiment_config import CommunitySpec, ExperimentConfig
     from dtreat.common.file_io import save_json
-    from dtreat.pipeline.experiment_config import CommunitySpec, ExperimentConfig
-    from dtreat.pipeline.run_directory_paths import RunDirectoryPaths
+    from dtreat.common.run_directory_paths import RunDirectoryPaths
 
     tmp_path = tmp_path_factory.mktemp("biased_e2e")
     target_file, baseline_file = build_prompt_files()

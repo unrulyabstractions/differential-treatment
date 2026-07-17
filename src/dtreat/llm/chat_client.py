@@ -8,6 +8,7 @@ pays for what is missing.
 
 from __future__ import annotations
 
+import os
 import threading
 import time
 from dataclasses import dataclass
@@ -132,7 +133,7 @@ class ChatClient:
         path = self._cache_path(request_id)
         if path is None:
             return
-        temp_path = path.with_suffix(".tmp")
+        temp_path = path.with_suffix(f".{os.getpid()}-{threading.get_ident()}.tmp")
         save_json(result.to_dict(), temp_path, readable_text=False)
         temp_path.replace(path)  # atomic within the same filesystem
 

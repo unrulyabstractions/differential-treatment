@@ -10,10 +10,10 @@ from __future__ import annotations
 from pathlib import Path
 
 from dtreat.common.console_logging import log, log_kv
+from dtreat.common.experiment_config import ExperimentConfig
 from dtreat.common.file_io import save_json
+from dtreat.common.run_directory_paths import RunDirectoryPaths
 from dtreat.llm.chat_client import ChatClient
-from dtreat.pipeline.experiment_config import ExperimentConfig
-from dtreat.pipeline.run_directory_paths import RunDirectoryPaths
 
 from .instruction_comparability import check_instruction_comparability
 from .instruction_extraction import annotate_prompt_sets
@@ -79,6 +79,15 @@ def run_prompt_collection(
             f"expects '{config.baseline_community.name}'"
         )
 
+    shared_ids = {p.prompt_id for p in target_set.prompts} & {
+        p.prompt_id for p in baseline_set.prompts
+    }
+    if shared_ids:
+        raise ValueError(
+            "prompt_ids shared across communities (must be globally unique): "
+            + ", ".join(sorted(shared_ids)[:5])
+        )
+
     if config.annotate_instructions == "extract":
         log(f"  extracting instructions with {config.annotator_model}")
         annotator = ChatClient(
@@ -96,6 +105,12 @@ def run_prompt_collection(
             f"  frequency matching kept {len(target_set.prompts)}/side, "
             f"dropped {matching.total_dropped()} prompts"
         )
+        if len(target_set.prompts) < 2:
+            raise ValueError(
+                "Frequency matching left fewer than 2 prompts per side — the two "
+                "sets share almost no instructions (extraction may have diverged). "
+                "Inspect the matching report in the stage-1 artifact."
+            )
 
     comparability = check_instruction_comparability(
         target_set, baseline_set, config.comparability_max_tv_distance

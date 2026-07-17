@@ -6,10 +6,7 @@ Merged port of queering-nlp-bias `src/common/logging/log_primitives.py` and
 
 from __future__ import annotations
 
-import sys
-
 HEADER_WIDTH = 60
-BANNER_WIDTH = 70
 
 
 def log(msg: str = "", end: str = "\n", gap: int = 0) -> None:
@@ -25,16 +22,6 @@ def log(msg: str = "", end: str = "\n", gap: int = 0) -> None:
     print(msg, end=end, flush=True)
 
 
-def log_flush() -> None:
-    """Flush stdout."""
-    sys.stdout.flush()
-
-
-def log_progress(current: int, total: int, prefix: str = "") -> None:
-    """Print progress indicator (overwrites line)."""
-    log(f"{prefix}{current}/{total}", end="\r")
-
-
 def log_header(title: str, gap: int = 0) -> None:
     """Log a section header with double-line border."""
     log("═" * HEADER_WIDTH, gap=gap)
@@ -47,13 +34,6 @@ def log_stage(step: int, total: int, title: str) -> None:
     log("▓" * HEADER_WIDTH, gap=2)
     log(f"▓  STAGE {step}/{total}: {title}")
     log("▓" * HEADER_WIDTH)
-
-
-def log_banner(title: str, char: str = "═", width: int = BANNER_WIDTH) -> None:
-    """Log a banner header."""
-    log("\n" + char * width)
-    log(title)
-    log(char * width)
 
 
 def log_kv(fields: dict, indent: str = "  ") -> None:

@@ -12,8 +12,8 @@ from pathlib import Path
 import numpy as np
 
 from dtreat.common.file_io import load_json, load_jsonl
+from dtreat.common.run_directory_paths import RunDirectoryPaths
 from dtreat.diagnostics.run_validation import collect_validation
-from dtreat.pipeline.run_directory_paths import RunDirectoryPaths
 from dtreat.stages.response_scoring.scored_response_schemas import ScoredResponse
 from dtreat.stages.treatment_analysis.permutation_significance import (
     permutation_p_values,
@@ -26,8 +26,10 @@ from dtreat.stages.treatment_analysis.treatment_analysis_stage import (
 
 def paths_for(runs_root: Path, run_name: str) -> RunDirectoryPaths:
     run_dir = (runs_root / run_name).resolve()
-    if not str(run_dir).startswith(str(runs_root.resolve())):
-        raise ValueError("run name escapes runs root")
+    try:
+        run_dir.relative_to(runs_root.resolve())
+    except ValueError as error:
+        raise ValueError("run name escapes runs root") from error
     return RunDirectoryPaths(run_dir)
 
 

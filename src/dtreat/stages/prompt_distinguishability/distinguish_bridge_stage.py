@@ -19,9 +19,9 @@ from pathlib import Path
 import pandas as pd
 
 from dtreat.common.console_logging import log, log_kv
+from dtreat.common.experiment_config import ExperimentConfig
 from dtreat.common.file_io import load_json, save_json
-from dtreat.pipeline.experiment_config import ExperimentConfig
-from dtreat.pipeline.run_directory_paths import RunDirectoryPaths
+from dtreat.common.run_directory_paths import RunDirectoryPaths
 from dtreat.stages.prompt_collection.prompt_set_schemas import PromptStageArtifact
 
 from .distinguish_report_schemas import (

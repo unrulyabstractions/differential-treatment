@@ -1,23 +1,12 @@
-"""Seed utilities for reproducibility.
-
-Ported from queering-nlp-bias `src/common/random_seed.py` (torch removed),
-extended with stable per-item seed derivation used by the mock backend and
-response sampling.
-"""
+"""Stable per-item seed derivation (mock backend, response sampling,
+permutation streams): every (prompt, sample, ...) combination gets its own
+reproducible RNG regardless of execution order."""
 
 from __future__ import annotations
 
 import hashlib
-import random
 
 import numpy as np
-
-
-def set_seed(seed: int | None) -> None:
-    """Set random seeds for reproducibility across random and numpy."""
-    if seed is not None:
-        random.seed(seed)
-        np.random.seed(seed)
 
 
 def derive_seed(*parts: str | int) -> int:

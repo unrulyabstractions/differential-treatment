@@ -8,17 +8,11 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime
 from pathlib import Path
 
 # Keys whose multiline string values are stored as arrays of lines on disk,
 # purely so artifacts stay pleasant to read and diff.
 READABLE_TEXT_KEYS = ("text", "raw_text", "trace", "prompt_text", "response_text")
-
-
-def get_timestamp() -> str:
-    """Get current timestamp string."""
-    return datetime.now().strftime("%Y%m%d_%H%M%S")
 
 
 def ensure_dir(path: Path) -> Path:
@@ -111,27 +105,23 @@ def load_json(path: Path, default: dict | list | None = None) -> dict | list:
     if s.startswith("﻿"):
         s = s[1:]
 
-    # Pre-processing: fix common JSON issues
-    # Remove double/multiple commas (e.g., "a",, "b" -> "a", "b")
-    s = re.sub(r",(\s*,)+", ",", s)
-    # Remove trailing commas before ] or }
-    s = re.sub(r",\s*([}\]])", r"\1", s)
-    # Remove leading commas after [ or {
-    s = re.sub(r"([{\[])(\s*),", r"\1\2", s)
-
-    # Try to parse
+    # Valid JSON must be parsed byte-for-byte as stored — repair heuristics
+    # run ONLY after a parse failure, because the comma-fixing regexes are
+    # string-unaware and would corrupt legitimate content (e.g. an LLM reply
+    # containing "[1, 2, ]" inside a string).
     try:
         data = json.loads(s)
         return _restore_text_fields(data)
     except json.JSONDecodeError as e:
-        # Attempt repair for truncated JSON
-        if (repaired := _attempt_json_repair(s)) is not None:
+        for repaired in (_fix_comma_glitches(s), _attempt_json_repair(s)):
+            if repaired is None or repaired == s:
+                continue
             try:
                 data = json.loads(repaired)
-                print(f"  [Warning] Repaired truncated JSON: {path}")
+                print(f"  [Warning] Repaired malformed JSON: {path}")
                 return _restore_text_fields(data)
             except json.JSONDecodeError:
-                pass
+                continue
 
         # If we have a default, use it
         if default is not None:
@@ -143,6 +133,16 @@ def load_json(path: Path, default: dict | list | None = None) -> dict | list:
             f"Invalid JSON in {path} at line {e.lineno}, col {e.colno}: {e.msg}\n"
             f"Context: ...{s[max(0, e.pos - 30):e.pos + 30]}..."
         ) from e
+
+
+def _fix_comma_glitches(s: str) -> str:
+    """Comma-fixing heuristics for hand-edited files (post-failure only)."""
+    # Remove double/multiple commas (e.g., "a",, "b" -> "a", "b")
+    s = re.sub(r",(\s*,)+", ",", s)
+    # Remove trailing commas before ] or }
+    s = re.sub(r",\s*([}\]])", r"\1", s)
+    # Remove leading commas after [ or {
+    return re.sub(r"([{\[])(\s*),", r"\1\2", s)
 
 
 def _attempt_json_repair(s: str) -> str | None:
