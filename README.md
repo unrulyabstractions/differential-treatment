@@ -131,6 +131,38 @@ scripts/           # generate_case_study_prompts.py, collect_reddit_prompts.py
 tests/             # unit / integration / live  (L0–L2)
 ```
 
+## Findings so far (2026-07-17, local real-data study)
+
+From `out/runs/real_study` — 60 real Reddit prompts/community (36/side after
+instruction matching), gpt-4o-mini as target, 24 union axes from 4 helper
+conditions, 216 responses, 5-judge cross-provider panel. All numbers
+independently recomputed from raw artifacts.
+
+- **Differential treatment is real and directional**: 21/24 axes significant
+  (BH-FDR 0.05), every significant Δ positive — LGBTQ+-voiced prompts get
+  MORE inclusive language (+0.34), more identity-integrated and body-diverse
+  advice (+0.27/+0.34), more body-positivity framing (+0.33), more
+  mental-health emphasis (+0.27), more emotional support (+0.32), and more
+  hedging on sensitive topics (+0.21); plus a non-significant trend of less
+  purely practical advice (−0.10). Whether this framing serves or patronizes
+  is the community's call (paper §5) — the pipeline's job is to surface it.
+- **The finding is judge-invariant**: 12 axes are significant under ALL five
+  judges (gpt-4o-mini, gpt-4.1-mini, claude-haiku-4-5, gemini-2.5-flash,
+  gemini-3.5-flash); pairwise Cohen's κ 0.61–0.79, with gemini-3.5-flash the
+  most conservative judge.
+- **Inputs are legible**: prompt-side C2ST 0.889, 13/20 distinguishability
+  tests significant; ~57% of the input signal carries into behavior
+  separability.
+- **Helper conditions matter**: two_stage (separate brainstorm → question
+  formation) captured the most information (0.66 bits) vs zero_context
+  (0.57), grounded (0.44), literature (0.39) — and conditions propose almost
+  entirely disjoint axes, so unioning conditions materially widens coverage.
+- **Method lessons**: LLM canonicalization of instructions needs an explicit
+  merge budget and enough output tokens (truncation silently destroys
+  frequency matching); Gemini judges need thinking disabled or replies starve;
+  complete-case C2ST loses most rows under a 24-axis panel with ties (158/216
+  dropped) — per-axis stats carry the evidence there.
+
 ## Notes
 
 - The case-study prompts and communities are **fictional and invented** for
