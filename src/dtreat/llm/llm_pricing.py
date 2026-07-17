@@ -24,13 +24,20 @@ PRICE_TABLE: list[tuple[str, float, float]] = [
     ("gpt-4.1", 2.0, 8.0),
     ("o3", 2.0, 8.0),
     ("o4-mini", 1.1, 4.4),
+    ("gemini-3.5-flash", 0.3, 2.5),
+    ("gemini-3.1-flash-lite", 0.1, 0.4),
+    ("gemini-3-flash", 0.3, 2.5),
+    ("gemini-2.5-flash-lite", 0.1, 0.4),
+    ("gemini-2.5-flash", 0.3, 2.5),
+    ("gemini-2.5-pro", 1.25, 10.0),
+    ("gemini-2.0-flash", 0.1, 0.4),
 ]
 
 
 def price_for_model(model: str) -> tuple[float, float] | None:
     """(input, output) USD/MTok for the first matching prefix, else None."""
     # provider-prefixed specs ("anthropic:claude-x") price by the bare model
-    model = model.split(":", 1)[1] if model.split(":", 1)[0] in ("anthropic", "openai") else model
+    model = model.split(":", 1)[1] if model.split(":", 1)[0] in ("anthropic", "openai", "google") else model
     for prefix, price_in, price_out in PRICE_TABLE:
         if model.startswith(prefix):
             return (price_in, price_out)

@@ -66,6 +66,17 @@ class RunDirectoryPaths:
     def hypothesis_set_path(self) -> Path:
         return self.run_dir / "stage2_hypotheses" / "hypothesis_set.json"
 
+    @property
+    def helper_study_path(self) -> Path:
+        return self.run_dir / "stage2_hypotheses" / "helper_study.json"
+
+    def helper_condition_path(self, condition_name: str) -> Path:
+        return self.run_dir / "stage2_hypotheses" / "conditions" / f"{condition_name}.json"
+
+    @property
+    def judge_study_path(self) -> Path:
+        return self.run_dir / "stage4_scores" / "judge_study.json"
+
     # ── stage 3: response collection ─────────────────────────────────────
 
     @property

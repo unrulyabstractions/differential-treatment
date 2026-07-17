@@ -56,23 +56,26 @@ BASELINE_POST_IDS = [
     ("1khqbn1", "naturalbodybuilding"),
 ]
 
-# Top-up sweep for the baseline side (dense, low-sensitivity): keyword queries
-# against beginner-fitness subreddits; every hit still passes the same filters.
-BASELINE_SWEEPS = [
-    ("beginnerfitness", "protein"),
-    ("beginnerfitness", "plateau"),
-    ("naturalbodybuilding", "cutting"),
-    ("gainit", "bulk"),
-]
+# Keyword sweeps per side; every hit passes the same ethics/quality filters.
+# Queries stay strictly fitness-scoped; swept posts must clear the fitness
+# relevance filter and must not be marked over_18.
+SWEEP_QUERIES = ["bulk", "cutting", "protein", "creatine", "plateau", "workout split", "macros", "meal plan"]
+TARGET_SWEEP_SUBREDDITS = ["FTMFitness", "askgaybros", "MtF", "butchlesbians", "gaybros"]
+BASELINE_SWEEP_SUBREDDITS = ["beginnerfitness", "naturalbodybuilding", "gainit", "bodybuilding"]
 SWEEP_URL = (
     "https://api.pullpush.io/reddit/search/submission/"
-    "?subreddit={subreddit}&q={query}&size=10"
+    "?subreddit={subreddit}&q={query}&size=25"
 )
-MAX_BASELINE_PROMPTS = 14
+MAX_PROMPTS_PER_SIDE = 60
+
+FITNESS_RELEVANCE_KEYWORDS = (
+    "bulk", "cut", "protein", "creatine", "muscle", "gym", "workout", "lift",
+    "weight", "plateau", "macro", "meal", "cardio", "calorie", "diet",
+)
 
 # Never include content from posters who self-identify as minors, and skip
 # removed/deleted or trivially short bodies.
-EXCLUSION_MARKERS = ("i'm underage", "im underage", "i am underage", "i'm a minor")
+EXCLUSION_MARKERS = ("i'm underage", "im underage", "i am underage", "i'm a minor", "i am a minor", "16m", "16f", "15m", "15f", "17m", "17f")
 
 
 def fetch_json(url: str) -> dict | None:
@@ -134,42 +137,57 @@ def collect_by_ids(post_ids: list[tuple[str, str]], prefix: str) -> list[dict]:
     return prompts
 
 
-def sweep_baseline(existing: list[dict]) -> list[dict]:
+def _sweep_usable(post: dict) -> str | None:
+    """Sweep hits face stricter filters than curated ids: on-topic and SFW."""
+    if post.get("over_18"):
+        return None
+    text = usable_text(post)
+    if text is None:
+        return None
+    lowered = text.lower()
+    if not any(keyword in lowered for keyword in FITNESS_RELEVANCE_KEYWORDS):
+        return None
+    return text
+
+
+def sweep_side(existing: list[dict], subreddits: list[str], prefix: str) -> list[dict]:
+    """Top up one side with keyword sweeps until MAX_PROMPTS_PER_SIDE."""
     seen_ids = {p["prompt_id"].split("_")[-1] for p in existing}
     prompts = list(existing)
-    for subreddit, query in BASELINE_SWEEPS:
-        if len(prompts) >= MAX_BASELINE_PROMPTS:
-            break
-        data = fetch_json(SWEEP_URL.format(subreddit=subreddit, query=query))
-        if data is None:
-            continue
-        for post in data.get("data", []):
-            if len(prompts) >= MAX_BASELINE_PROMPTS:
-                break
-            post_id = post.get("id", "")
-            text = usable_text(post)
-            if not post_id or post_id in seen_ids or text is None:
+    for query in SWEEP_QUERIES:
+        for subreddit in subreddits:
+            if len(prompts) >= MAX_PROMPTS_PER_SIDE:
+                return prompts
+            data = fetch_json(SWEEP_URL.format(subreddit=subreddit, query=query))
+            if data is None:
                 continue
-            seen_ids.add(post_id)
-            prompts.append(
-                {
-                    "prompt_id": f"b_reddit_{post_id}",
-                    "text": text,
-                    "instruction_id": "",
-                    "source_permalink": f"reddit.com/r/{subreddit}/comments/{post_id}/",
-                }
-            )
-        time.sleep(0.5)
+            for post in data.get("data", []):
+                if len(prompts) >= MAX_PROMPTS_PER_SIDE:
+                    break
+                post_id = post.get("id", "")
+                text = _sweep_usable(post)
+                if not post_id or post_id in seen_ids or text is None:
+                    continue
+                seen_ids.add(post_id)
+                prompts.append(
+                    {
+                        "prompt_id": f"{prefix}_{post_id}",
+                        "text": text,
+                        "instruction_id": "",
+                        "source_permalink": f"reddit.com/r/{subreddit}/comments/{post_id}/",
+                    }
+                )
     return prompts
 
 
 def main() -> None:
-    print("Collecting target-community prompts (curated ids)...")
+    print("Collecting target-community prompts (curated ids + sweeps)...")
     target_prompts = collect_by_ids(TARGET_POST_IDS, "t_reddit")
+    target_prompts = sweep_side(target_prompts, TARGET_SWEEP_SUBREDDITS, "t_reddit")
     print(f"  {len(target_prompts)} target prompts")
-    print("Collecting baseline prompts (curated ids + sweep)...")
+    print("Collecting baseline prompts (curated ids + sweeps)...")
     baseline_prompts = collect_by_ids(BASELINE_POST_IDS, "b_reddit")
-    baseline_prompts = sweep_baseline(baseline_prompts)
+    baseline_prompts = sweep_side(baseline_prompts, BASELINE_SWEEP_SUBREDDITS, "b_reddit")
     print(f"  {len(baseline_prompts)} baseline prompts")
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)

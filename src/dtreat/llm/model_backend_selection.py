@@ -4,7 +4,9 @@ Specs:
     mock:<role>[:variant]      -> MockChatBackend (spec passed through whole)
     anthropic:<model>          -> AnthropicChatBackend with <model>
     openai:<model>             -> OpenAIChatBackend with <model>
+    google:<model>             -> GeminiChatBackend with <model>
     claude*                    -> AnthropicChatBackend
+    gemini*                    -> GeminiChatBackend
     gpt* / o1* / o3* / o4*     -> OpenAIChatBackend
 """
 
@@ -14,6 +16,7 @@ from dtreat.common.dotenv_loading import load_dotenv_file
 
 from .anthropic_chat_backend import AnthropicChatBackend
 from .chat_backend_base import ChatBackend
+from .gemini_chat_backend import GeminiChatBackend
 from .mock_chat_backend import MockChatBackend
 from .openai_chat_backend import OpenAIChatBackend
 
@@ -41,6 +44,10 @@ def resolve_backend(model_spec: str) -> tuple[ChatBackend, str]:
         return _cached("anthropic", AnthropicChatBackend), model_spec.split(":", 1)[1]
     if model_spec.startswith("openai:"):
         return _cached("openai", OpenAIChatBackend), model_spec.split(":", 1)[1]
+    if model_spec.startswith("google:"):
+        return _cached("gemini", GeminiChatBackend), model_spec.split(":", 1)[1]
+    if model_spec.startswith("gemini"):
+        return _cached("gemini", GeminiChatBackend), model_spec
     if model_spec.startswith("claude"):
         return _cached("anthropic", AnthropicChatBackend), model_spec
     if model_spec.startswith(("gpt", "o1", "o3", "o4", "chatgpt")):

@@ -18,10 +18,24 @@ from dtreat.diagnostics.cost_estimation import print_cost_estimate
 from dtreat.diagnostics.llm_trace_reporting import print_trace_report
 from dtreat.diagnostics.run_validation import print_run_status, validate_run
 from dtreat.server.debug_server_app import serve_debug_ui
+from dtreat.stages.hypothesis_generation.helper_condition_study import (
+    STANDARD_CONDITIONS,
+    run_helper_conditions,
+    summarize_downstream,
+)
+from dtreat.stages.prompt_collection.prompt_collection_stage import run_prompt_collection
 from dtreat.stages.prompt_distinguishability.distinguish_bridge_stage import (
     run_prompt_distinguishability,
 )
+from dtreat.stages.response_collection.response_collection_stage import (
+    run_response_collection,
+)
 from dtreat.stages.response_scoring.judge_calibration_stage import run_judge_calibration
+from dtreat.stages.response_scoring.judge_model_study import run_judge_study
+from dtreat.stages.response_scoring.response_scoring_stage import run_response_scoring
+from dtreat.stages.treatment_analysis.treatment_analysis_stage import (
+    run_treatment_analysis,
+)
 
 from .stage_registry import PIPELINE_STAGES, STAGES_BY_NAME
 
@@ -112,6 +126,27 @@ def _build_parser() -> argparse.ArgumentParser:
     _add_config_arguments(distinguish)
     distinguish.set_defaults(handler=_run_distinguish)
 
+    helper_study = subparsers.add_parser(
+        "helper-study",
+        help="compare hypothesis-generation conditions (zero_context/literature/grounded/seeded/two_stage)",
+    )
+    _add_config_arguments(helper_study)
+    helper_study.add_argument(
+        "--conditions", nargs="+", default=None,
+        help=f"conditions to run (default: {' '.join(STANDARD_CONDITIONS)})",
+    )
+    helper_study.set_defaults(handler=_helper_study)
+
+    judge_study = subparsers.add_parser(
+        "judge-study", help="score with many judges; kappa matrix + per-judge conclusions"
+    )
+    _add_config_arguments(judge_study)
+    judge_study.add_argument(
+        "--judges", nargs="+", required=True,
+        help="judge model specs to compare (e.g. gpt-4o-mini claude-haiku-4-5 gemini-3.5-flash)",
+    )
+    judge_study.set_defaults(handler=_judge_study)
+
     serve = subparsers.add_parser("serve", help="debug/visualization server + UI")
     serve.add_argument("--runs-root", default="out/runs", help="directory containing runs")
     serve.add_argument("--port", type=int, default=8321)
@@ -185,6 +220,35 @@ def _calibrate_judge(args) -> int:
 def _run_distinguish(args) -> int:
     config, paths = _resolve(args)
     run_prompt_distinguishability(config, paths)
+    return 0
+
+
+def _helper_study(args) -> int:
+    """Full study: conditions -> union axes -> shared responses/scoring ->
+    union analysis -> per-condition downstream comparison."""
+    config, paths = _resolve(args)
+    conditions = args.conditions or STANDARD_CONDITIONS
+    if not paths.prompt_sets_path.exists():
+        run_prompt_collection(config, paths)
+    report, union = run_helper_conditions(config, paths, conditions)
+    run_response_collection(config, paths)
+    run_response_scoring(config, paths)
+    analysis = run_treatment_analysis(config, paths)
+    report.downstream = summarize_downstream(report, union, analysis.axes)
+    save_json(report.to_dict(), paths.helper_study_path)
+    log("\nHelper-study downstream (per condition over shared responses):")
+    for entry in report.downstream:
+        log(
+            f"  {entry.condition:<13} axes={entry.n_axes:<3} significant={entry.n_significant} "
+            f"info={entry.total_info_bits:.3f} bits  mean|Δ|={entry.mean_abs_delta:.3f}"
+        )
+    log(f"  full report: {paths.helper_study_path}")
+    return 0
+
+
+def _judge_study(args) -> int:
+    config, paths = _resolve(args)
+    run_judge_study(config, paths, args.judges)
     return 0
 
 

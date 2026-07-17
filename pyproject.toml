@@ -23,6 +23,7 @@ dependencies = [
     "uvicorn>=0.29",
     # distinguish/ bridge dataset export (parquet tables)
     "pandas>=2.2",
+    "google-genai>=1.0.0",
     "pyarrow>=16.0",
 ]
 
