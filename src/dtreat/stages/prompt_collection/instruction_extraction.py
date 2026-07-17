@@ -15,6 +15,7 @@ from __future__ import annotations
 import re
 
 from dtreat.common.experiment_config import ExperimentConfig
+from dtreat.common.console_logging import log
 from dtreat.common.json_text_extraction import extract_first_json_object
 from dtreat.llm.chat_client import ChatClient
 from dtreat.llm.chat_types import ChatMessage
@@ -106,17 +107,28 @@ def canonicalize_instruction_phrases(
                 ),
             ],
             temperature=0.0,
-            max_tokens=1500,
+            # scale with input size: a truncated mapping silently degrades to
+            # per-phrase ids and destroys frequency matching
+            max_tokens=max(1500, 200 + 30 * len(distinct)),
             seed=config.seed,
         )
     )
     raw_mapping = extract_first_json_object(result.text) or {}
     mapping = {}
+    fallbacks = 0
     for phrase in distinct:
         canonical = raw_mapping.get(phrase)
+        if canonical is None:
+            fallbacks += 1
         # Unmapped phrases fall back to their own normalized form so no prompt
         # is silently dropped; the comparability check will surface mismatches.
         mapping[phrase] = _to_instruction_id(str(canonical) if canonical else phrase)
+    if fallbacks > len(distinct) * 0.3:
+        log(
+            f"  [warn] canonicalization mapped only {len(distinct) - fallbacks}/"
+            f"{len(distinct)} phrases (reply truncated or malformed?) — "
+            "unmapped phrases keep per-phrase ids and will match poorly"
+        )
     return mapping
 
 

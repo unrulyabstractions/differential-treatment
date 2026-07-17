@@ -30,6 +30,9 @@ class GeminiChatBackend(ChatBackend):
             temperature=request.temperature,
             max_output_tokens=request.max_tokens,
             system_instruction=request.system_text(),
+            # thinking shares the output-token budget on flash models; a
+            # thinking burst can starve the visible reply to a few tokens
+            thinking_config=genai_types.ThinkingConfig(thinking_budget=0),
         )
         contents = "\n\n".join(
             message.content for message in request.non_system_messages()
