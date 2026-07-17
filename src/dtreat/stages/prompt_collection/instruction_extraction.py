@@ -35,13 +35,20 @@ Reply with ONLY the underlying instruction as a verb-first phrase of at most
 6 words (e.g. "ask how to bulk up"). No punctuation, no explanations.
 Instruction phrase:"""
 
-CANONICALIZATION_TEMPLATE = """Group these instruction phrases so that phrases asking the same thing share
-one canonical id. Phrases:
+CANONICALIZATION_TEMPLATE = """Group these instruction phrases so that phrases asking the same KIND of thing
+share one canonical id. Phrases:
 {phrase_lines}
 
-Reply with ONLY a JSON object mapping EVERY phrase above to a canonical
-snake_case instruction id (at most 4 words). Phrases asking the same
-underlying thing must map to the same id."""
+Merge aggressively: use AT MOST {max_groups} distinct ids across all
+{n_phrases} phrases. An id names the generic underlying request (like
+"ask_bulking_advice", "ask_cutting_advice", "ask_supplement_advice",
+"ask_plateau_help"), never specific details such as body parts, products,
+numbers, or context. Phrases about gaining weight/muscle/bulking share one
+id; phrases about losing fat/cutting/leaning out share one id; phrases about
+supplements share one id. Most phrases MUST share an id with others.
+
+Reply with ONLY a JSON object mapping EVERY phrase above to its canonical
+snake_case id (at most 4 words)."""
 
 
 def extract_instruction_phrases(
@@ -90,7 +97,12 @@ def canonicalize_instruction_phrases(
             [
                 ChatMessage("system", ANNOTATOR_SYSTEM_PROMPT),
                 ChatMessage(
-                    "user", CANONICALIZATION_TEMPLATE.format(phrase_lines=phrase_lines)
+                    "user",
+                    CANONICALIZATION_TEMPLATE.format(
+                        phrase_lines=phrase_lines,
+                        n_phrases=len(distinct),
+                        max_groups=config.max_instruction_groups,
+                    ),
                 ),
             ],
             temperature=0.0,

@@ -258,6 +258,40 @@ verified numbers bit-identically (4/5 significant, D_pi 0.54 bits, C2ST
 0.833) — observed stdout.
 
 RESULT: VERIFIED.
+
+## 2026-07-17 — Real-data experiment (real Reddit prompts, live models)
+
+WHAT: `out/runs/real_reddit/` — 12+14 real community prompts (PullPush,
+curated + verified permalinks, LOCAL ONLY/gitignored, checked with
+git check-ignore + status), gpt-4o-mini target/helper/annotator,
+gpt-4o-mini + gpt-4.1-mini judge panel, extraction + frequency matching,
+distinguish bridge, calibration. Total cost ≈ $0.06.
+
+HOW + findings (artifacts READ directly):
+- First run FAILED CORRECTLY: canonicalizer produced 26 ids for 26 phrases
+  (no merging), matching emptied both sets, and the new guard aborted stage 1
+  with a diagnostic — the review fix caught a real failure the same day.
+  Fixed by giving canonicalization a hard group budget
+  (max_instruction_groups=8) + aggressive-merge instructions; re-run kept
+  7 prompts/side at TV=0.
+- Full pipeline: 42 responses, 0 refusals; panel scored with 30 tie/unparsed
+  verdicts (12% — real judges disagree more than mocks); READ
+  analysis_summary.md in full: 0/6 axes significant at FDR 0.05; largest
+  trends customized_advice Δ=−0.51 (p=0.078) and long_term_focus Δ=−0.55
+  (p=0.030, q=0.183) — target-community prompts trend toward LESS customized,
+  LESS sustainability-focused advice, correctly not claimed significant at
+  n=7 prompts/side; C2ST 0.667 [0.300, 0.903] → not above chance.
+- Calibration (observed stdout): gpt-4o-mini vs gpt-4.1-mini raw 0.881,
+  Cohen kappa 0.701 (n=252); flip rates 0.000 / 0.021 at temperature 0.
+- Distinguish bridge (observed stdout + summary READ): input C2ST 0.714,
+  5/20 input tests significant; IO comparison: 78% signal usage.
+- FIX during verification: IO interpretation overclaimed "the model acts on
+  it" from point estimates; added an output-evidence gate — re-ran analyze
+  and READ the regenerated hedged interpretation ("collect more prompts
+  before drawing conclusions").
+
+RESULT: VERIFIED by direct artifact reads + observed stdout; independent
+verifier agent recomputation in progress (result logged when it returns).
 ## 2026-07-17 — Web research: seed prompts for fitness/nutrition bias-audit dataset
 - WHAT: Verbatim Reddit question prompts (LGBTQ+ vs general/cis-het fitness communities) collected for the report delivered in-chat (not written to a file). Sources: PullPush API (api.pullpush.io) queries over r/FTMFitness, r/askgaybros, r/gaybros, r/MtF, r/butchlesbians, r/actuallesbians, r/beginnerfitness, r/naturalbodybuilding, r/gainit, r/GYM, r/Fitness, r/bodybuilding.
 - HOW: For ~20 quotes used in the report, re-fetched the raw PullPush JSON with curl and printed title/selftext/permalink directly (bypassing WebFetch's summarizer model) and compared strings: FTMFitness (5 posts), askgaybros (5), beginnerfitness (4), MtF (3), butchlesbians (3), gainit (1), naturalbodybuilding (2). All matched verbatim. RESULT: VERIFIED.

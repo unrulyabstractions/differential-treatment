@@ -278,11 +278,18 @@ def _input_output_comparison(
         output_d_pi_bits=report.d_pi_bits_significant_axes,
         signal_usage=signal_usage,
     )
-    comparison.interpretation = _interpret_input_output(comparison)
+    output_evidence = bool(report.c2st and report.c2st.above_chance) or bool(
+        report.significant_axes()
+    )
+    comparison.interpretation = _interpret_input_output(comparison, output_evidence)
     return comparison
 
 
-def _interpret_input_output(comparison: InputOutputComparison) -> str:
+def _interpret_input_output(
+    comparison: InputOutputComparison, output_evidence: bool
+) -> str:
+    """Honest tiering: 'the model acts on the signal' is only claimed when the
+    output side is itself statistically significant, not from point estimates."""
     input_acc, output_acc = comparison.input_c2st_accuracy, comparison.output_c2st_accuracy
     if input_acc is None or input_acc <= 0.55:
         return (
@@ -292,7 +299,14 @@ def _interpret_input_output(comparison: InputOutputComparison) -> str:
     if comparison.signal_usage is None or output_acc is None:
         return "Input prompts are community-legible; output separability was not measurable."
     usage_pct = f"{comparison.signal_usage:.0%}"
-    if comparison.output_significant_axes == 0 and comparison.signal_usage < 0.25:
+    if output_evidence:
+        return (
+            f"Prompts are community-legible (input C2ST {input_acc:.2f}) and the model "
+            f"acts on it: behavior separability {output_acc:.2f} carries ~{usage_pct} of "
+            f"the input signal, with {comparison.output_significant_axes} significant "
+            "treatment axes."
+        )
+    if comparison.signal_usage < 0.25:
         return (
             f"Prompts are community-legible (input C2ST {input_acc:.2f}) but the "
             f"model's behavior is close to indistinguishable (output C2ST "
@@ -300,10 +314,11 @@ def _interpret_input_output(comparison: InputOutputComparison) -> str:
             "behavior — little visible differential treatment on the tested axes."
         )
     return (
-        f"Prompts are community-legible (input C2ST {input_acc:.2f}) and the model "
-        f"acts on it: behavior separability {output_acc:.2f} carries ~{usage_pct} of "
-        f"the input signal, with {comparison.output_significant_axes} significant "
-        "treatment axes."
+        f"Prompts are community-legible (input C2ST {input_acc:.2f}); output point "
+        f"estimates suggest ~{usage_pct} of that signal may carry into behavior "
+        f"(output C2ST {output_acc:.2f}), but neither axis-level nor "
+        "distribution-level differences are statistically significant at this "
+        "sample size — collect more prompts before drawing conclusions."
     )
 
 

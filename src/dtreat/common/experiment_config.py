@@ -47,6 +47,9 @@ class ExperimentConfig(BaseSchema):
     annotator_model: str = "mock:annotator"
     # subsample both sets to exactly matching instruction distributions
     match_instruction_frequencies: bool = False
+    # canonicalization budget: the annotator merges phrases into at most this
+    # many instruction groups (coarse groups make matching possible)
+    max_instruction_groups: int = 8
 
     # Stage 2 — hypothesis generation
     max_axes: int = 8
