@@ -1,0 +1,19 @@
+{
+    "run_name": "mock_null",
+    "deployment_context": "A consumer chat assistant giving fitness and nutrition advice to adults asking about muscle gain, fat loss, meal planning, and training.",
+    "target_community": { "name": "lgbtq", "prompt_file": "data/prompts/lgbtq_fitness.json" },
+    "baseline_community": { "name": "cishet", "prompt_file": "data/prompts/cishet_fitness.json" },
+    "helper_model": "mock:helper",
+    "target_model": "mock:target:null",
+    "judge_model": "mock:judge",
+    "max_axes": 5,
+    "samples_per_prompt": 5,
+    "temperature": 1.0,
+    "max_response_tokens": 512,
+    "judge_mode": "per_response",
+    "n_permutations": 2000,
+    "fdr_alpha": 0.05,
+    "permutation_unit": "prompt",
+    "seed": 7,
+    "max_workers": 8
+}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dtreat — pipeline debugger</title>
+<link rel="stylesheet" href="/static/debug_ui.css">
+</head>
+<body>
+<div id="app" class="viz-root">
+  <aside id="sidebar">
+    <h1>dtreat</h1>
+    <p class="subtitle">differential-treatment pipeline debugger</p>
+    <div id="run-list" aria-label="runs"></div>
+  </aside>
+  <main id="main">
+    <nav id="tabs" role="tablist">
+      <button data-tab="overview" class="active">Overview</button>
+      <button data-tab="stage1">1 · Prompts</button>
+      <button data-tab="stage2">2 · Hypotheses</button>
+      <button data-tab="stage3">3 · Responses</button>
+      <button data-tab="stage4">4 · Scores</button>
+      <button data-tab="stage5">5 · Analysis</button>
+      <button data-tab="trace">LLM Trace</button>
+    </nav>
+    <section id="content"><p class="muted">Select a run on the left.</p></section>
+  </main>
+</div>
+<div id="tooltip" role="status" aria-live="polite"></div>
+<script src="/static/debug_ui.js"></script>
+</body>
+</html>

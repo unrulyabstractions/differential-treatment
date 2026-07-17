@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "differential-treatment"
+version = "0.1.0"
+description = "Discovering how LLMs treat user communities differently, without explicit markers"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Ian Rios-Sialer", email = "ian@unrulyabstractions.com" }]
+requires-python = ">=3.11"
+keywords = ["nlp", "bias", "llm", "fairness", "audit"]
+
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.12",
+    "scikit-learn>=1.4",
+    "tqdm>=4.66",
+    "anthropic>=0.40.0",
+    "openai>=1.0.0",
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.4", "pytest-cov"]
+
+[project.scripts]
+dtreat = "dtreat.pipeline.cli_entrypoint:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"dtreat.server" = ["static/*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["build", ".venv", "venv", "dist", "paper"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "C4", "SIM", "RUF"]
+# E501: long lines OK; RUF001-003: en-dashes and × in docstrings are deliberate
+ignore = ["E501", "RUF001", "RUF002", "RUF003"]
+
+[tool.pytest.ini_options]
+markers = [
+    "live: tests that call real LLM APIs (opt-in, cost money); run with -m live",
+]
+addopts = "-m 'not live'"
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = ["pytest>=8.0", "ruff>=0.4", "pytest-cov"]

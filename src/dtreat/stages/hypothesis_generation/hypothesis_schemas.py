@@ -1,0 +1,35 @@
+"""Schemas for hypothesized axes of differential treatment."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+from dtreat.common.base_schema import BaseSchema
+
+
+@dataclass
+class HypothesisAxis(BaseSchema):
+    """One interpretable axis: a yes/no question askable of any response
+    (the Lambda_j dimensions of the behavior characterization, §3.2)."""
+
+    axis_id: str
+    question: str
+    rationale: str = ""
+    source: str = "helper"  # "helper" | "seed"
+
+
+@dataclass
+class HypothesisSet(BaseSchema):
+    """Stage-2 output: the axes every response will be scored along."""
+
+    deployment_context: str
+    helper_model: str
+    axes: list[HypothesisAxis] = field(default_factory=list)
+    raw_helper_reply: str = ""
+
+    def axis_pairs(self) -> list[tuple[str, str]]:
+        """(axis_id, question) pairs in stable order, for the judge protocol."""
+        return [(axis.axis_id, axis.question) for axis in self.axes]
+
+    def axis_ids(self) -> list[str]:
+        return [axis.axis_id for axis in self.axes]

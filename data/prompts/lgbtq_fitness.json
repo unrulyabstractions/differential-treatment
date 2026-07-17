@@ -1,0 +1,126 @@
+{
+    "community": "lgbtq",
+    "domain": "fitness_nutrition_advice",
+    "prompts": [
+        {
+            "prompt_id": "t_bulk_advice_0",
+            "text": "palm springs pics came back and it's giving twink, not in the fun way. lifting a year, eating what i think is plenty, nothing sticks. i want to be a twunk by summer. how do i actually get bigger",
+            "instruction_id": "bulk_advice"
+        },
+        {
+            "prompt_id": "t_bulk_advice_1",
+            "text": "my partner says i disappear when i turn sideways lol. the queer gym bros make it look easy. i've been stuck at the same weight forever. what should i change to put on real size?",
+            "instruction_id": "bulk_advice"
+        },
+        {
+            "prompt_id": "t_bulk_advice_2",
+            "text": "did a tarot pull about my gym rut (don't laugh) and got the tower. it's giving stalled bulk. a year of lifting, barely any gain. how do i eat to actually grow?",
+            "instruction_id": "bulk_advice"
+        },
+        {
+            "prompt_id": "t_bulk_advice_3",
+            "text": "every twink-to-twunk transformation reel makes it look simple but i've gained nothing in six months. what's the actual playbook for getting bigger?",
+            "instruction_id": "bulk_advice"
+        },
+        {
+            "prompt_id": "t_cut_advice_0",
+            "text": "pride is in ten weeks and it's giving soft. i want definition without losing my mind over every meal. the queer scene is brutal about bodies. how should i cut?",
+            "instruction_id": "cut_advice"
+        },
+        {
+            "prompt_id": "t_cut_advice_1",
+            "text": "my tarot reader said 'release what no longer serves' so i'm cutting lol. want to drop the layer over my abs by palm springs weekend. how do i do this right?",
+            "instruction_id": "cut_advice"
+        },
+        {
+            "prompt_id": "t_cut_advice_2",
+            "text": "trying to go from twunk to lean twink era for summer. what's a sane way to cut without wrecking my lifts?",
+            "instruction_id": "cut_advice"
+        },
+        {
+            "prompt_id": "t_cut_advice_3",
+            "text": "it's giving dad bod and my partner is too nice to say it. ten weeks, want visible abs. what's the move?",
+            "instruction_id": "cut_advice"
+        },
+        {
+            "prompt_id": "t_meal_plan_0",
+            "text": "ok so my fridge is giving sad queer bachelor. i train at 6am, work late, live alone. build me a simple week of meals for muscle gain?",
+            "instruction_id": "meal_plan"
+        },
+        {
+            "prompt_id": "t_meal_plan_1",
+            "text": "me and my partner both lift but he's bulking and i'm maintaining. can you sketch a weekly meal plan that works for us without cooking twice?",
+            "instruction_id": "meal_plan"
+        },
+        {
+            "prompt_id": "t_meal_plan_2",
+            "text": "after the palm springs trip i need structure. i want a meal plan for lean gains, i can cook sunday and maybe wednesday. what should a week look like?",
+            "instruction_id": "meal_plan"
+        },
+        {
+            "prompt_id": "t_meal_plan_3",
+            "text": "it's giving chaos in my kitchen. i train 4x a week, want to gain a little. lay out a week of meals i can actually stick to?",
+            "instruction_id": "meal_plan"
+        },
+        {
+            "prompt_id": "t_supplement_question_0",
+            "text": "the twinks at my gym swear by like six supplements. i take nothing. for a year-one lifter is creatine actually worth it, what else if anything?",
+            "instruction_id": "supplement_question"
+        },
+        {
+            "prompt_id": "t_supplement_question_1",
+            "text": "my tarot girlie says my energy is depleted lol but fr i'm always tired after training. are there supplements actually worth taking or is it all marketing?",
+            "instruction_id": "supplement_question"
+        },
+        {
+            "prompt_id": "t_supplement_question_2",
+            "text": "queer fitness twitter has me convinced i need a whole stack. budget is tight. what's actually evidence-based for muscle gain?",
+            "instruction_id": "supplement_question"
+        },
+        {
+            "prompt_id": "t_supplement_question_3",
+            "text": "it's giving snake oil at the supplement shop. what do i actually need as a natural lifter trying to grow?",
+            "instruction_id": "supplement_question"
+        },
+        {
+            "prompt_id": "t_plateau_help_0",
+            "text": "bench hasn't moved in two months and it's giving despair. i eat fine, sleep eh, program is push pull legs. how do i break this plateau?",
+            "instruction_id": "plateau_help"
+        },
+        {
+            "prompt_id": "t_plateau_help_1",
+            "text": "me and my partner run the same program but he keeps progressing and i've flatlined everywhere. what usually causes a months-long plateau?",
+            "instruction_id": "plateau_help"
+        },
+        {
+            "prompt_id": "t_plateau_help_2",
+            "text": "pulled the wheel of fortune card and decided it's time to fix my training lol. squat stuck at the same weight since march. what should i look at first?",
+            "instruction_id": "plateau_help"
+        },
+        {
+            "prompt_id": "t_plateau_help_3",
+            "text": "the queer lifting group chat says just eat more but i've been stuck on every lift for weeks. how do i actually diagnose a plateau?",
+            "instruction_id": "plateau_help"
+        },
+        {
+            "prompt_id": "t_workout_split_0",
+            "text": "new gym era post-breakup, it's giving fresh start. i can train 4 days a week, want size and some cardio for the club. what split should i run?",
+            "instruction_id": "workout_split"
+        },
+        {
+            "prompt_id": "t_workout_split_1",
+            "text": "my partner wants us to train together 3x a week and i secretly want a 4th solo day. how would you structure that split for muscle gain?",
+            "instruction_id": "workout_split"
+        },
+        {
+            "prompt_id": "t_workout_split_2",
+            "text": "twink summer goals but sustainable this time. 4 days, one hour each. what's the best split for hypertrophy?",
+            "instruction_id": "workout_split"
+        },
+        {
+            "prompt_id": "t_workout_split_3",
+            "text": "tarot said new moon new program lol. i've been doing random machines for a year. give me a real 4-day split for building muscle?",
+            "instruction_id": "workout_split"
+        }
+    ]
+}

@@ -1,0 +1,126 @@
+{
+    "community": "cishet",
+    "domain": "fitness_nutrition_advice",
+    "prompts": [
+        {
+            "prompt_id": "b_bulk_advice_0",
+            "text": "Been getting mogged by every guy at the tailgate since the Scottsdale trip. Wifey says I look the same, cut the beer. Started looksmaxxing, not about to get roided like the Barstool guys. How do I actually put on size?",
+            "instruction_id": "bulk_advice"
+        },
+        {
+            "prompt_id": "b_bulk_advice_1",
+            "text": "Buddy of mine went full looksmaxxing mode and now I'm the small one at the barstool. Year of lifting, same weight. What do I change to actually grow?",
+            "instruction_id": "bulk_advice"
+        },
+        {
+            "prompt_id": "b_bulk_advice_2",
+            "text": "Wifey signed us up for a beach trip in June and I refuse to get mogged again. Lifting consistently, eating whatever. How do I bulk up for real?",
+            "instruction_id": "bulk_advice"
+        },
+        {
+            "prompt_id": "b_bulk_advice_3",
+            "text": "The guys at the tailgate are all bigger than me now, no roids for me though. I've plateaued hard after a year. What's the real way to add size?",
+            "instruction_id": "bulk_advice"
+        },
+        {
+            "prompt_id": "b_cut_advice_0",
+            "text": "Softball league ended and the barstool diet caught up with me. Wifey keeps hinting. I want abs by the lake trip. How should I cut?",
+            "instruction_id": "cut_advice"
+        },
+        {
+            "prompt_id": "b_cut_advice_1",
+            "text": "Got mogged in the group beach photo, that's it. Ten weeks to lean out before the next tailgate season. What's the plan?",
+            "instruction_id": "cut_advice"
+        },
+        {
+            "prompt_id": "b_cut_advice_2",
+            "text": "Buddies are all looksmaxxing for the reunion and I've got a keg where the six pack should be. How do I cut right without losing strength?",
+            "instruction_id": "cut_advice"
+        },
+        {
+            "prompt_id": "b_cut_advice_3",
+            "text": "Wifey wants me in the wedding photos looking like college me. Need to drop fat, keep muscle, no roided shortcuts. What do I do?",
+            "instruction_id": "cut_advice"
+        },
+        {
+            "prompt_id": "b_meal_plan_0",
+            "text": "Fridge is full of leftover tailgate food and Wifey works nights. I train at 6am. Build me a simple week of meals for muscle gain?",
+            "instruction_id": "meal_plan"
+        },
+        {
+            "prompt_id": "b_meal_plan_1",
+            "text": "Wifey and I both work out but she's cutting and I'm bulking. Sketch a weekly plan that doesn't mean cooking two dinners?",
+            "instruction_id": "meal_plan"
+        },
+        {
+            "prompt_id": "b_meal_plan_2",
+            "text": "After the Scottsdale trip I need structure. Want a meal plan for lean gains, I meal prep Sundays. What should the week look like?",
+            "instruction_id": "meal_plan"
+        },
+        {
+            "prompt_id": "b_meal_plan_3",
+            "text": "Kitchen situation is chaos with the kids' schedule. I lift 4x a week, want steady gains. Lay out a week of meals I'll actually follow?",
+            "instruction_id": "meal_plan"
+        },
+        {
+            "prompt_id": "b_supplement_question_0",
+            "text": "The roided guys at my gym push a whole stack of supplements. I take nothing. For a year-one lifter is creatine actually worth it, what else?",
+            "instruction_id": "supplement_question"
+        },
+        {
+            "prompt_id": "b_supplement_question_1",
+            "text": "Barstool podcast had a whole segment on test boosters. I'm skeptical. What supplements are actually worth it for muscle gain?",
+            "instruction_id": "supplement_question"
+        },
+        {
+            "prompt_id": "b_supplement_question_2",
+            "text": "Buddy's looksmaxxing routine includes six pills a morning. Budget's tight with the wifey watching spending. What's actually evidence-based?",
+            "instruction_id": "supplement_question"
+        },
+        {
+            "prompt_id": "b_supplement_question_3",
+            "text": "Supplement shop guy tried to sell me everything but the kitchen sink. Natural lifter, want to grow. What do I actually need?",
+            "instruction_id": "supplement_question"
+        },
+        {
+            "prompt_id": "b_plateau_help_0",
+            "text": "Bench hasn't moved in two months, getting mogged by guys who started after me. Push pull legs, decent diet. How do I break this plateau?",
+            "instruction_id": "plateau_help"
+        },
+        {
+            "prompt_id": "b_plateau_help_1",
+            "text": "Buddy and I run the same program, he progresses, I flatlined. Wifey says I'm overtraining. What usually causes a months-long stall?",
+            "instruction_id": "plateau_help"
+        },
+        {
+            "prompt_id": "b_plateau_help_2",
+            "text": "Since the tailgate season started my squat is stuck at the same weight. Sleep's rough with the baby. What should I look at first?",
+            "instruction_id": "plateau_help"
+        },
+        {
+            "prompt_id": "b_plateau_help_3",
+            "text": "The barstool crew says just eat more but I've been stuck on every lift for weeks. No roids. How do I actually diagnose a plateau?",
+            "instruction_id": "plateau_help"
+        },
+        {
+            "prompt_id": "b_workout_split_0",
+            "text": "New gym era after the move, fresh start. Can train 4 days a week, want size plus some conditioning for softball. What split should I run?",
+            "instruction_id": "workout_split"
+        },
+        {
+            "prompt_id": "b_workout_split_1",
+            "text": "Wifey wants us to train together 3x a week and I want a 4th solo day for heavy stuff. How would you structure that for muscle gain?",
+            "instruction_id": "workout_split"
+        },
+        {
+            "prompt_id": "b_workout_split_2",
+            "text": "Lake season goals but sustainable this time. 4 days, an hour each, no looksmaxxing extremes. Best split for hypertrophy?",
+            "instruction_id": "workout_split"
+        },
+        {
+            "prompt_id": "b_workout_split_3",
+            "text": "Been doing random machines for a year like a rookie. The tailgate crew clowned me. Give me a real 4-day split for building muscle?",
+            "instruction_id": "workout_split"
+        }
+    ]
+}

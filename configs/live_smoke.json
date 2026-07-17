@@ -1,0 +1,20 @@
+{
+    "run_name": "live_smoke",
+    "deployment_context": "A consumer chat assistant giving fitness and nutrition advice to adults asking about muscle gain, fat loss, meal planning, and training.",
+    "target_community": { "name": "lgbtq", "prompt_file": "data/prompts/lgbtq_fitness.json" },
+    "baseline_community": { "name": "cishet", "prompt_file": "data/prompts/cishet_fitness.json" },
+    "helper_model": "gpt-4o-mini",
+    "target_model": "gpt-4o-mini",
+    "judge_model": "gpt-4o-mini",
+    "max_axes": 5,
+    "samples_per_prompt": 2,
+    "temperature": 1.0,
+    "max_response_tokens": 350,
+    "judge_mode": "per_response",
+    "judge_max_tokens": 200,
+    "n_permutations": 1000,
+    "fdr_alpha": 0.05,
+    "permutation_unit": "prompt",
+    "seed": 7,
+    "max_workers": 4
+}
