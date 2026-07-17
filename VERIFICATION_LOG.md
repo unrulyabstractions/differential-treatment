@@ -318,6 +318,35 @@ which 20 are tests with p-values (n_tests=20); 6 (modernbert + usage scales)
 carry no p-value.
 
 RESULT: VERIFIED — second consecutive clean audit; iteration loop stopped.
+
+## 2026-07-17 — Scaled real-data study (out/runs/real_study) + independent verification
+
+WHAT: The full research study on 60 real prompts/community: 4 helper
+conditions (24 union axes), 216 responses, 2-judge panel scoring, 5-judge
+cross-provider judge study, calibration, input-side distinguishability, IO
+comparison. Two infrastructure defects found by study v1 and fixed
+(canonicalization token truncation collapsing matching to 5/60 per side;
+Gemini thinking starving judge replies to ~27 tokens).
+
+HOW: Ran the suite twice (v1 diagnosed via llm_trace.jsonl: canonicalization
+output = exactly its 1500-token cap; Gemini previews showed valid JSON cut at
+~27 output tokens; claude-3-5-haiku 404 = retired). v2 observed stdout + READ
+analysis_summary.md in full + extracted judge_study.json numbers. Independent
+verifier agent then recomputed EVERY claim from raw artifacts: matching
+36/side with TV = 0.0 exact and 48 drops accounted; union 24 axes with 1:1
+condition mapping and both collision renames confirmed; 216 = 72×3 responses;
+panel raw agreement 4727/5184 = 0.911844 and kappa 0.743630 exact (sklearn
+cross-check identical); tailored_advice +0.340909, identity_integration
++0.272727, practical_advice −0.095874 to full precision; exactly 21
+significant, all positive; C2ST block consistent (158 dropped incomplete);
+judge-study intersection = 12 axes exact, kappa matrix 10 pairs (0.6140 min
+gpt-4o-mini↔gemini-3.5-flash, 0.7882 max gpt-4.1-mini↔claude-haiku-4-5);
+input side 13/20 significant, best C2ST 0.88888889 cross-checked against the
+distinguish run's own distributional.json.
+Verifier nuance adopted: manifest `unparsed_verdicts` is panel TIES, not
+parse failures — schema docstring + UI label clarified.
+
+RESULT: VERIFIED (all seven verification items, exact recomputation).
 ## 2026-07-17 — Web research: seed prompts for fitness/nutrition bias-audit dataset
 - WHAT: Verbatim Reddit question prompts (LGBTQ+ vs general/cis-het fitness communities) collected for the report delivered in-chat (not written to a file). Sources: PullPush API (api.pullpush.io) queries over r/FTMFitness, r/askgaybros, r/gaybros, r/MtF, r/butchlesbians, r/actuallesbians, r/beginnerfitness, r/naturalbodybuilding, r/gainit, r/GYM, r/Fitness, r/bodybuilding.
 - HOW: For ~20 quotes used in the report, re-fetched the raw PullPush JSON with curl and printed title/selftext/permalink directly (bypassing WebFetch's summarizer model) and compared strings: FTMFitness (5 posts), askgaybros (5), beginnerfitness (4), MtF (3), butchlesbians (3), gainit (1), naturalbodybuilding (2). All matched verbatim. RESULT: VERIFIED.

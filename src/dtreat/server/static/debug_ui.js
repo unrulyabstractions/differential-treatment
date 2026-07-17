@@ -413,7 +413,7 @@ const renderers = {
     const m = data.manifest;
     tiles([
       { value: m.scored_responses ?? data.total, label: "scored responses" },
-      { value: m.unparsed_verdicts ?? 0, label: "unparsed verdicts", cls: m.unparsed_verdicts ? "bad" : "good" },
+      { value: m.unparsed_verdicts ?? 0, label: "unparsed/tie verdicts", cls: m.unparsed_verdicts ? "bad" : "good" },
       { value: m.judge_calls ?? "—", label: `judge calls (${m.judge_mode || "?"})` },
       { value: "$" + (m.estimated_cost_usd || 0).toFixed(4), label: "judge cost" },
     ]);

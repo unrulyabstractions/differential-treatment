@@ -31,7 +31,11 @@ class ScoredResponse(BaseSchema):
 
 @dataclass
 class ScoringManifest(BaseSchema):
-    """Stage-4 summary: coverage, judge accounting, parse health."""
+    """Stage-4 summary: coverage, judge accounting, parse health.
+
+    unparsed_verdicts counts axes with NO aggregate verdict for any reason —
+    with a multi-judge panel that is dominated by aggregation ties (judges
+    disagreeing), not parser failures."""
 
     judge_models: list[str]
     judge_mode: str
