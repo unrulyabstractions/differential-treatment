@@ -52,6 +52,21 @@ def render_analysis_summary(report: AnalysisReport) -> str:
             )
             + ")"
         )
+    if report.input_output:
+        io = report.input_output
+        lines += [
+            "",
+            "## Input legibility vs output treatment",
+            "",
+            f"- input prompt separability (C2ST): "
+            f"{_fmt_opt(io.input_c2st_accuracy)} "
+            f"({io.input_n_significant}/{io.input_n_tests} input tests significant)",
+            f"- output behavior separability (C2ST): {_fmt_opt(io.output_c2st_accuracy)}",
+            "- signal usage: "
+            + (f"{io.signal_usage:.0%}" if io.signal_usage is not None else "n/a"),
+            "",
+            io.interpretation,
+        ]
     if report.refusals:
         refusals = report.refusals
         lines += [
@@ -95,6 +110,10 @@ def _sorted_axes(report: AnalysisReport) -> list[AxisResult]:
         report.axes,
         key=lambda axis: (not axis.significant, -axis.info_bits, axis.p_value),
     )
+
+
+def _fmt_opt(value: float | None) -> str:
+    return f"{value:.3f}" if value is not None else "n/a"
 
 
 def _axis_row(axis: AxisResult) -> str:

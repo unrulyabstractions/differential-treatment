@@ -47,11 +47,18 @@ prompts ──▶ hypotheses ──▶ responses ──▶ score ──▶ analy
 
 | CLI stage | What it does | Paper |
 |-----------|--------------|-------|
-| `dtreat prompts` | Load both community prompt sets, validate, check **instruction comparability** (TV distance + χ² over instruction frequencies) | §3.1, §4.1, Eq 1–3 |
-| `dtreat hypotheses` | Helper LLM proposes interpretable yes/no **axes of treatment**; seeds + literature notes supported; robust JSON parsing + dedup | §4.2 |
+| `dtreat prompts` | Load both community prompt sets, validate; **instruction annotation** either provided or LLM-extracted (two-pass: phrase extraction → cross-community canonicalization); optional **frequency matching** by subsampling to identical instruction distributions; **comparability check** (TV distance + χ²) | §3.1, §4.1, Eq 1–3 |
+| `dtreat distinguish` | **Input-side distinguishability** of the two prompt sets via the vendored `distinguish/` pipeline (lexical / syntactic / semantic / distributional / topical dimensions, `paper/distinguishability.pdf`) | dist. §3.4 |
+| `dtreat hypotheses` | Helper LLM proposes interpretable yes/no **axes of treatment** with judge **rubrics**; seeds + literature notes supported; robust JSON parsing + dedup | §4.2 |
 | `dtreat responses` | Sample K responses per prompt from the target LLM; refusals recorded as first-class data; resumable | §4.3, Eq 4 |
-| `dtreat score` | LLM judge scores every response on every axis (community never disclosed); per-response or per-axis calls | §2.3, §4.4, Eq 5–7 |
-| `dtreat analyze` | Rate gaps Δ_j, prompt-level **permutation tests** + **Benjamini–Hochberg** FDR, **mutual-information ranking** I_j, treatment profiles + **D_π** (KL, bits), **C2ST**, refusal analysis | §4.5, Eq 9–14 |
+| `dtreat score` | **Judge panel** (one or many models, majority/unanimous/any aggregation) scores every response on every axis with rubrics (community never disclosed); per-judge verdicts retained | §2.3, §4.4, Eq 5–7 |
+| `dtreat calibrate-judge` | Judge validation: pairwise **Cohen's κ**, panel **Fleiss' κ**, self-consistency flip rates under reseeding, optional gold-label accuracy | §5.3 |
+| `dtreat analyze` | Rate gaps Δ_j, prompt-level **permutation tests** + **Benjamini–Hochberg** FDR, **mutual-information ranking** I_j, treatment profiles + **D_π** (KL, bits), **C2ST**, refusal analysis, and the **input-vs-output comparison** (prompt legibility vs behavior separability, signal-usage ratio) | §4.5, Eq 9–14; dist. §5.2 |
+
+Real-data testing: `scripts/collect_reddit_prompts.py` builds LOCAL-ONLY
+prompt sets from curated, research-verified public Reddit posts via the
+PullPush archive (gitignored — community data stewardship; excluded: minors,
+removed posts, usernames never collected).
 
 Every stage reads the previous stage's artifact from `out/runs/<run>/` and
 writes its own — all human-readable JSON/JSONL, so any stage can be run

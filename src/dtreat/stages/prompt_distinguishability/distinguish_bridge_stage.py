@@ -37,6 +37,17 @@ def export_distinguish_dataset(
 ) -> Path:
     """Write our prompt sets as a distinguish-format dataset directory."""
     dataset_dir.mkdir(parents=True, exist_ok=True)
+    # topic_id is an integer taxonomy index in the distinguish schema; give
+    # each instruction id a stable index. Usage-context ints use their
+    # missing sentinel 0 (we have no survey context for these prompts).
+    all_instruction_ids = sorted(
+        {
+            prompt.instruction_id
+            for prompt in artifact.target_set.prompts + artifact.baseline_set.prompts
+        }
+    )
+    topic_index = {instruction_id: i + 1 for i, instruction_id in enumerate(all_instruction_ids)}
+
     prompt_rows = []
     author_rows = []
     for cohort, prompt_set, lgbtq in (
@@ -54,15 +65,15 @@ def export_distinguish_dataset(
                     "lgbtq": lgbtq,
                     "markedness": 0,
                     "codedness": 0.5,
-                    "topic_id": prompt.instruction_id,
+                    "topic_id": topic_index[prompt.instruction_id],
                     "domain": prompt.instruction_id,
                     "provenance": "differential-treatment stage 1",
-                    "adoption": "",
-                    "general_freq": None,
-                    "llm_freq": None,
-                    "professional_freq": None,
-                    "aversion": None,
-                    "satisfaction": None,
+                    "adoption": 0,
+                    "general_freq": 0,
+                    "llm_freq": 0,
+                    "professional_freq": 0,
+                    "aversion": 0,
+                    "satisfaction": 0,
                 }
             )
             author_rows.append(

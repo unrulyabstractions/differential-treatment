@@ -187,6 +187,25 @@ C2ST 0.833 — confirming the pipeline is deterministic end to end;
 HTTP 200. TaskList empty.
 
 RESULT: VERIFIED — two consecutive clean audits; iteration loop stopped.
+
+## 2026-07-17 — Instruction extraction/matching + judge panel + calibration
+
+WHAT: New stage-1 extraction (`annotate_instructions: extract`) + frequency
+matching; stage-4 multi-judge panels with rubrics; `dtreat calibrate-judge`.
+
+HOW: Ran `dtreat run-all -c configs/mock_panel.json` and observed stdout
+directly: extraction with mock:annotator, matching kept 21/side and dropped 6
+prompts (recorded), TV distance 0.000 exactly, comparability PASSED; panel of
+2 judges scored 210 responses. Ran `dtreat calibrate-judge`: observed
+mock:judge vs mock:judge:noisy raw agreement 0.954, Cohen kappa 0.908
+(n=1050) — matching the planted 5% flip noise model (expected raw ≈ 0.95);
+self-consistency flip rates 0.000 (deterministic judge) and 0.060 (noisy,
+consistent with 2·0.05·0.95 ≈ 0.095 over 50 verdicts). Added 16 unit tests
+(Cohen kappa textbook value 0.4 exact, Fleiss cases, aggregation rules,
+matching determinism) + 2 integration tests — observed 71 passed total.
+
+RESULT: VERIFIED (mock path, artifacts + stdout observed). NOT yet verified:
+panel behavior with real API judges; distinguish bridge (in progress).
 ## 2026-07-17 — Web research: seed prompts for fitness/nutrition bias-audit dataset
 - WHAT: Verbatim Reddit question prompts (LGBTQ+ vs general/cis-het fitness communities) collected for the report delivered in-chat (not written to a file). Sources: PullPush API (api.pullpush.io) queries over r/FTMFitness, r/askgaybros, r/gaybros, r/MtF, r/butchlesbians, r/actuallesbians, r/beginnerfitness, r/naturalbodybuilding, r/gainit, r/GYM, r/Fitness, r/bodybuilding.
 - HOW: For ~20 quotes used in the report, re-fetched the raw PullPush JSON with curl and printed title/selftext/permalink directly (bypassing WebFetch's summarizer model) and compared strings: FTMFitness (5 posts), askgaybros (5), beginnerfitness (4), MtF (3), butchlesbians (3), gainit (1), naturalbodybuilding (2). All matched verbatim. RESULT: VERIFIED.

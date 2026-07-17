@@ -80,7 +80,8 @@ function groupedBars(container, categories, series, opts = {}) {
       x: left - 8, y: y0 + (series.length * rowH) / 2 + 4,
       "text-anchor": "end", class: "axis-label",
     });
-    label.textContent = cat.length > 24 ? cat.slice(0, 23) + "…" : cat;
+    const maxLabelChars = Math.max(24, Math.floor(left / 7));
+    label.textContent = cat.length > maxLabelChars ? cat.slice(0, maxLabelChars - 1) + "…" : cat;
     svg.appendChild(label);
     series.forEach((s, si) => {
       const value = s.values[ci];
@@ -428,17 +429,6 @@ const renderers = {
       data.heatmap.map(r => r.prompt_id), axes,
       (i, j) => data.heatmap[i][axes[j]],
       { rowNote: i => `community: ${data.heatmap[i].community}` });
-    const judged = card("Judged responses");
-    judged.innerHTML += `<table class="data"><tr><th>response</th><th>community</th>` +
-      axes.map(a => `<th>${esc(a)}</th>`).join("") + `<th>raw</th></tr>` +
-      data.records.map(r => `<tr><td class="mono">${esc(r.response_id)}</td>
-        <td><span class="chip ${r.community === tName ? "target" : "baseline"}">${esc(r.community)}</span></td>` +
-        axes.map(a => {
-          const v = r.verdicts[a];
-          return `<td>${v === undefined ? '<span class="chip warn">?</span>' : v ? "✓" : "·"}</td>`;
-        }).join("") +
-        `<td><details><summary>raw</summary><pre class="raw">${esc(Object.entries(r.raw_judge_replies || {}).map(([j, reply]) => j + ":\n" + reply).join("\n\n"))}</pre></details></td></tr>`).join("") +
-      `</table>`;
     if (data.calibration) {
       const cal = data.calibration;
       const calCard = card("Judge calibration", `panel: ${cal.judge_models.join(", ")}`);
@@ -457,6 +447,17 @@ const renderers = {
       }
       for (const note of cal.notes || []) calCard.innerHTML += `<p class="muted">${esc(note)}</p>`;
     }
+    const judged = card("Judged responses");
+    judged.innerHTML += `<table class="data"><tr><th>response</th><th>community</th>` +
+      axes.map(a => `<th>${esc(a)}</th>`).join("") + `<th>raw</th></tr>` +
+      data.records.map(r => `<tr><td class="mono">${esc(r.response_id)}</td>
+        <td><span class="chip ${r.community === tName ? "target" : "baseline"}">${esc(r.community)}</span></td>` +
+        axes.map(a => {
+          const v = r.verdicts[a];
+          return `<td>${v === undefined ? '<span class="chip warn">?</span>' : v ? "✓" : "·"}</td>`;
+        }).join("") +
+        `<td><details><summary>raw</summary><pre class="raw">${esc(Object.entries(r.raw_judge_replies || {}).map(([j, reply]) => j + ":\n" + reply).join("\n\n"))}</pre></details></td></tr>`).join("") +
+      `</table>`;
   },
 
   async stage5() {
