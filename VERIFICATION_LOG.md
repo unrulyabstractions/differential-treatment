@@ -292,6 +292,32 @@ HOW + findings (artifacts READ directly):
 
 RESULT: VERIFIED by direct artifact reads + observed stdout; independent
 verifier agent recomputation in progress (result logged when it returns).
+
+## 2026-07-17 — Independent verifier recomputation of real_reddit (final)
+
+WHAT: All six verification items for out/runs/real_reddit, recomputed from
+raw artifacts by a separate verifier agent (resumed after a transient API
+drop mid-run).
+
+HOW (verifier's computed numbers): stage-1 kept 7/side, instruction multisets
+identical, TV = 0.0 recomputed, kept ∪ dropped exactly equals the 26
+collected ids; 42 responses = 14×3, all gpt-4o-mini, texts 1551–2144 chars,
+spot-read as real advice; 252 judge-verdict pairs complete for both judges,
+pooled raw agreement 222/252 = 0.880952 and Cohen kappa 0.701493 recomputed
+exactly (marginal-product pe = 0.60119); aggregation rule exact over all 252
+pairs (agreement→verdict, disagreement→unparsed, 0 mismatches); all 6 axes'
+n/rates/deltas match the report to <1e-6 (customized_advice 6/14=0.42857 vs
+16/17=0.94118; long_term_focus 4/19=0.21053 vs 13/17=0.76471); 0/6
+significant (min q=0.183); signal usage arithmetic checks
+((0.6667−0.5)/(0.7143−0.5)=0.7778); interpretation confirmed hedged;
+input report 5/20 tests significant, best C2ST 0.71428571 cross-checked
+against the distinguish run's own distributional.json; real_reddit_*.json
+confirmed untracked (git ls-files + check-ignore:24).
+Nuance noted: input_distinguishability.json holds 26 verdict entries of
+which 20 are tests with p-values (n_tests=20); 6 (modernbert + usage scales)
+carry no p-value.
+
+RESULT: VERIFIED — second consecutive clean audit; iteration loop stopped.
 ## 2026-07-17 — Web research: seed prompts for fitness/nutrition bias-audit dataset
 - WHAT: Verbatim Reddit question prompts (LGBTQ+ vs general/cis-het fitness communities) collected for the report delivered in-chat (not written to a file). Sources: PullPush API (api.pullpush.io) queries over r/FTMFitness, r/askgaybros, r/gaybros, r/MtF, r/butchlesbians, r/actuallesbians, r/beginnerfitness, r/naturalbodybuilding, r/gainit, r/GYM, r/Fitness, r/bodybuilding.
 - HOW: For ~20 quotes used in the report, re-fetched the raw PullPush JSON with curl and printed title/selftext/permalink directly (bypassing WebFetch's summarizer model) and compared strings: FTMFitness (5 posts), askgaybros (5), beginnerfitness (4), MtF (3), butchlesbians (3), gainit (1), naturalbodybuilding (2). All matched verbatim. RESULT: VERIFIED.
