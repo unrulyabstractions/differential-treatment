@@ -1,0 +1,50 @@
+{
+    "name": "pan17_variety",
+    "description": "PAN-2017 author profiling (EN Twitter, Zenodo 3745980): English variety contrast, US vs GB, one tweet per prompt, 80 authors x 4 tweets per side (seed=0). Subtle-signal / coded-language analog; author gender is stored but variety is the single primary y.",
+    "cohorts": [
+        {
+            "name": "target",
+            "group": "target",
+            "display_name": "US tweeters (variety=united states, y=1)",
+            "description": "Authors labeled 'united states' in truth.txt."
+        },
+        {
+            "name": "baseline",
+            "group": "baseline",
+            "display_name": "GB tweeters (variety=great britain, y=0)",
+            "description": "Authors labeled 'great britain' in truth.txt."
+        },
+        {
+            "name": "null_split_a",
+            "group": "target",
+            "display_name": "US null split A (negative control)",
+            "description": "Random half of the sampled US authors (seeded)."
+        },
+        {
+            "name": "null_split_b",
+            "group": "baseline",
+            "display_name": "US null split B (negative control)",
+            "description": "Complementary half of the sampled US authors."
+        }
+    ],
+    "comparisons": [
+        {
+            "name": "target_vs_baseline",
+            "target_cohort": "target",
+            "baseline_cohort": "baseline",
+            "expectation": "distinguishable",
+            "explorations": true,
+            "expected_accuracy": 0.715,
+            "notes": "Validation role: subtle-signal / coded-language analog. Published PAN17 EN numbers are per-FEED (100 tweets/author): 0.9004 6-way variety accuracy (Tellez et al., CLEF 2017 overview Table 4); the 0.715 anchor for this US-vs-GB pair is per-feed too, so per-TWEET separability will run lower \u2014 compare per-author aggregates."
+        },
+        {
+            "name": "null_split",
+            "target_cohort": "null_split_a",
+            "baseline_cohort": "null_split_b",
+            "expectation": "null",
+            "explorations": false,
+            "expected_accuracy": 0.5,
+            "notes": "Negative control: seeded random author split WITHIN the US cohort. Expect C2ST ~ 0.5, 0 BH survivors, null MMD."
+        }
+    ]
+}

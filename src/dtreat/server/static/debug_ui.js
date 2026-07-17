@@ -341,6 +341,16 @@ const renderers = {
       { name: data.target_set.community, color: palette().target, values: comp.frequencies.map(f => f.target_fraction) },
       { name: data.baseline_set.community, color: palette().baseline, values: comp.frequencies.map(f => f.baseline_fraction) },
     ]);
+    if (data.input_distinguishability) {
+      const input = data.input_distinguishability;
+      const inputCard = card("Input distinguishability (distinguish/ bridge)",
+        `${input.n_significant}/${input.n_tests} tests significant` +
+        (input.best_c2st_accuracy != null ? ` · best prompt C2ST ${input.best_c2st_accuracy.toFixed(3)} (${input.best_c2st_variant})` : ""));
+      inputCard.innerHTML += `<table class="data"><tr><th>dimension</th><th>variant</th><th>statistic</th><th class="num">value</th><th class="num">p</th><th>sig</th></tr>` +
+        input.verdicts.map(v =>
+          `<tr><td>${esc(v.dimension)}</td><td class="mono">${esc(v.variant)}</td><td>${esc(v.statistic_name)}</td><td class="num">${v.statistic_value.toFixed(3)}</td><td class="num">${v.p_value == null ? "—" : v.p_value.toFixed(4)}</td><td>${v.significant == null ? "—" : v.significant ? '<span class="chip sig">yes</span>' : "no"}</td></tr>`).join("") + `</table>` +
+        (input.skipped_variants.length ? `<p class="muted">skipped: ${esc(input.skipped_variants.join(", "))}</p>` : "");
+    }
     for (const [key, set] of [["target_set", data.target_set], ["baseline_set", data.baseline_set]]) {
       const t = card(`${set.community} prompts`);
       t.innerHTML += `<table class="data"><tr><th>id</th><th>instruction</th><th>text</th></tr>` +
@@ -427,8 +437,26 @@ const renderers = {
           const v = r.verdicts[a];
           return `<td>${v === undefined ? '<span class="chip warn">?</span>' : v ? "✓" : "·"}</td>`;
         }).join("") +
-        `<td><details><summary>raw</summary><pre class="raw">${esc(r.raw_judge_reply)}</pre></details></td></tr>`).join("") +
+        `<td><details><summary>raw</summary><pre class="raw">${esc(Object.entries(r.raw_judge_replies || {}).map(([j, reply]) => j + ":\n" + reply).join("\n\n"))}</pre></details></td></tr>`).join("") +
       `</table>`;
+    if (data.calibration) {
+      const cal = data.calibration;
+      const calCard = card("Judge calibration", `panel: ${cal.judge_models.join(", ")}`);
+      if (cal.pair_agreements.length) {
+        calCard.innerHTML += `<table class="data"><tr><th>judge pair</th><th class="num">n</th><th class="num">raw agreement</th><th class="num">Cohen κ</th></tr>` +
+          cal.pair_agreements.map(p =>
+            `<tr><td>${esc(p.judge_a)} vs ${esc(p.judge_b)}</td><td class="num">${p.n_paired_verdicts}</td><td class="num">${p.raw_agreement.toFixed(3)}</td><td class="num">${p.kappa_overall == null ? "—" : p.kappa_overall.toFixed(3)}</td></tr>`).join("") + `</table>`;
+      }
+      if (cal.axis_panel_agreements.length) {
+        calCard.innerHTML += `<p class="desc">Fleiss κ per axis: ` +
+          cal.axis_panel_agreements.map(a => `${esc(a.axis_id)} ${a.fleiss == null ? "—" : a.fleiss.toFixed(2)}`).join(" · ") + `</p>`;
+      }
+      if (cal.consistency.length) {
+        calCard.innerHTML += `<p class="desc">self-consistency flip rates: ` +
+          cal.consistency.map(c => `${esc(c.judge_model)}: ${(c.flip_rate_overall * 100).toFixed(1)}%`).join(" · ") + `</p>`;
+      }
+      for (const note of cal.notes || []) calCard.innerHTML += `<p class="muted">${esc(note)}</p>`;
+    }
   },
 
   async stage5() {
@@ -441,6 +469,22 @@ const renderers = {
       { value: report.c2st ? report.c2st.accuracy.toFixed(3) : "—", label: `C2ST accuracy (majority ${report.c2st ? report.c2st.majority_baseline.toFixed(3) : "—"})`, cls: report.c2st?.above_chance ? "bad" : "good" },
       { value: report.refusals ? `${(report.refusals.target_rate * 100).toFixed(1)}% / ${(report.refusals.baseline_rate * 100).toFixed(1)}%` : "—", label: "refusal rate target / baseline" },
     ]);
+    if (report.input_output) {
+      const io = report.input_output;
+      const ioCard = card("Input legibility vs output treatment",
+        "how much of the prompts' community signal shows up in the model's behavior");
+      const rows = [];
+      if (io.input_c2st_accuracy != null)
+        rows.push({ label: "input: prompt separability (C2ST)", value: io.input_c2st_accuracy });
+      if (io.output_c2st_accuracy != null)
+        rows.push({ label: "output: behavior separability (C2ST)", value: io.output_c2st_accuracy });
+      groupedBars(ioCard, rows.map(r => r.label), [{
+        name: "held-out accuracy (0.5 = chance)", color: palette().seq[3],
+        values: rows.map(r => r.value),
+      }], { left: 260 });
+      ioCard.innerHTML += `<p class="desc">signal usage: ${io.signal_usage == null ? "n/a" : (io.signal_usage * 100).toFixed(0) + "%"} · input tests significant: ${io.input_n_significant}/${io.input_n_tests}</p>` +
+        `<p>${esc(io.interpretation)}</p>`;
+    }
     const deltaCard = card("Treatment gaps Δ per axis (Eq 10)",
       `bar toward ${report.target_community} (right/blue) or ${report.baseline_community} (left/green); outline = not significant; click a bar for its permutation null`);
     const nullHost = document.createElement("div");

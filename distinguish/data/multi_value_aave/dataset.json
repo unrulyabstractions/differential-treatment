@@ -1,0 +1,110 @@
+{
+    "name": "multi_value_aave",
+    "description": "Multi-VALUE AAVE sensitivity dial: a neutral SAE corpus (data/synthetic baseline) transformed into African-American Vernacular English at five rule-application densities p in {0.05,0.10,0.25,0.50,1.00}. Exact y by construction (identical authors/content; only dialect differs). One comparison per p forms a sensitivity curve; a null author-split of the untransformed baseline is the negative control. Validates the pipeline's sensitivity to graded stylistic signal, not realism.",
+    "cohorts": [
+        {
+            "name": "baseline",
+            "group": "baseline",
+            "display_name": "Original SAE prompts (y=0)",
+            "description": "Standard-American-English source prompts (the baseline cohort of data/synthetic): plain, direct register, no dialect transform."
+        },
+        {
+            "name": "value_p05",
+            "group": "target",
+            "display_name": "AAVE-transformed p=0.05 (y=1)",
+            "description": "Same authors/content as baseline, with Multi-VALUE AAVE morphosyntax applied at rule-application density p=0.05 (5% of changed sentences kept transformed, seeded/nested)."
+        },
+        {
+            "name": "value_p10",
+            "group": "target",
+            "display_name": "AAVE-transformed p=0.1 (y=1)",
+            "description": "Same authors/content as baseline, with Multi-VALUE AAVE morphosyntax applied at rule-application density p=0.1 (10% of changed sentences kept transformed, seeded/nested)."
+        },
+        {
+            "name": "value_p25",
+            "group": "target",
+            "display_name": "AAVE-transformed p=0.25 (y=1)",
+            "description": "Same authors/content as baseline, with Multi-VALUE AAVE morphosyntax applied at rule-application density p=0.25 (25% of changed sentences kept transformed, seeded/nested)."
+        },
+        {
+            "name": "value_p50",
+            "group": "target",
+            "display_name": "AAVE-transformed p=0.5 (y=1)",
+            "description": "Same authors/content as baseline, with Multi-VALUE AAVE morphosyntax applied at rule-application density p=0.5 (50% of changed sentences kept transformed, seeded/nested)."
+        },
+        {
+            "name": "value_p100",
+            "group": "target",
+            "display_name": "AAVE-transformed p=1 (y=1)",
+            "description": "Same authors/content as baseline, with Multi-VALUE AAVE morphosyntax applied at rule-application density p=1 (100% of changed sentences kept transformed, seeded/nested)."
+        },
+        {
+            "name": "null_split_a",
+            "group": "baseline",
+            "display_name": "Baseline null split A",
+            "description": "Seeded random half of the baseline authors, pure SAE (no transform) \u2014 negative-control partner."
+        },
+        {
+            "name": "null_split_b",
+            "group": "baseline",
+            "display_name": "Baseline null split B",
+            "description": "Seeded random half of the baseline authors, pure SAE (no transform) \u2014 negative-control partner."
+        }
+    ],
+    "comparisons": [
+        {
+            "name": "value_p05_vs_baseline",
+            "target_cohort": "value_p05",
+            "baseline_cohort": "baseline",
+            "expectation": "",
+            "explorations": false,
+            "expected_accuracy": 0.0,
+            "notes": "sensitivity calibration, exact y; AAVE rule-application density p=0.05. Tunable signal (no fixed published target)."
+        },
+        {
+            "name": "value_p10_vs_baseline",
+            "target_cohort": "value_p10",
+            "baseline_cohort": "baseline",
+            "expectation": "",
+            "explorations": false,
+            "expected_accuracy": 0.0,
+            "notes": "sensitivity calibration, exact y; AAVE rule-application density p=0.1. Tunable signal (no fixed published target)."
+        },
+        {
+            "name": "value_p25_vs_baseline",
+            "target_cohort": "value_p25",
+            "baseline_cohort": "baseline",
+            "expectation": "",
+            "explorations": false,
+            "expected_accuracy": 0.0,
+            "notes": "sensitivity calibration, exact y; AAVE rule-application density p=0.25. Tunable signal (no fixed published target)."
+        },
+        {
+            "name": "value_p50_vs_baseline",
+            "target_cohort": "value_p50",
+            "baseline_cohort": "baseline",
+            "expectation": "distinguishable",
+            "explorations": false,
+            "expected_accuracy": 0.0,
+            "notes": "sensitivity calibration, exact y; AAVE rule-application density p=0.5. Tunable signal (no fixed published target)."
+        },
+        {
+            "name": "value_p100_vs_baseline",
+            "target_cohort": "value_p100",
+            "baseline_cohort": "baseline",
+            "expectation": "distinguishable",
+            "explorations": true,
+            "expected_accuracy": 0.0,
+            "notes": "sensitivity calibration, exact y; AAVE rule-application density p=1. Tunable signal (no fixed published target)."
+        },
+        {
+            "name": "null_split_a_vs_b",
+            "target_cohort": "null_split_a",
+            "baseline_cohort": "null_split_b",
+            "expectation": "null",
+            "explorations": false,
+            "expected_accuracy": 0.0,
+            "notes": "negative control: random author-split of the untransformed baseline; expect C2ST~0.5, 0 BH survivors, null MMD."
+        }
+    ]
+}

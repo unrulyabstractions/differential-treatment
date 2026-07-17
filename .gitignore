@@ -19,6 +19,11 @@ htmlcov/
 out/
 *.llmcache/
 
+# Real community prompt data stays LOCAL ONLY (community data stewardship —
+# never push collected user content to the public remote)
+data/prompts/real_*
+distinguish/runs/
+
 # Auto-backup snapshots
 .backups/
 

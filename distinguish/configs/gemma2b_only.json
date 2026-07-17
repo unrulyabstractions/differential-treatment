@@ -1,0 +1,34 @@
+{
+    "_description": "gemma-2-2B residual as the SOLE representation throughout (no text embedders). Attributional on.",
+    "include_attributional": true,
+    "semantic": {
+        "text_embedders": [
+            "residual:google/gemma-2-2b-it"
+        ],
+        "residual_models": []
+    },
+    "distributional": {
+        "embedders": [
+            "residual:google/gemma-2-2b-it"
+        ],
+        "residual_models": [],
+        "classifiers": [
+            "linear"
+        ],
+        "n_permutations": 100
+    },
+    "topical": {
+        "assignment_backends": [
+            "embedding"
+        ],
+        "embedding_model": "residual:google/gemma-2-2b-it",
+        "n_permutations": 100
+    },
+    "interactional": {
+        "annotation_backends": [
+            "embedding"
+        ],
+        "embedding_model": "residual:google/gemma-2-2b-it",
+        "n_permutations": 100
+    }
+}

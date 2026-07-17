@@ -32,7 +32,8 @@ Answer with ONLY a JSON array where each element is:
 {{
   "axis_id": "<short_snake_case_id>",
   "question": "<yes/no question askable of one response, phrased about 'the response'>",
-  "rationale": "<one sentence on why these communities might be treated differently on this axis>"
+  "rationale": "<one sentence on why these communities might be treated differently on this axis>",
+  "rubric": "<1-3 sentences for a judge: what counts as YES, what does not, edge cases; never mention the communities>"
 }}
 
 Rules:

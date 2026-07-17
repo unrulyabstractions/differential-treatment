@@ -1,0 +1,50 @@
+{
+    "name": "reddit_l2",
+    "description": "Reddit-L2 (Rabinovich et al. 2018; Goldin et al. 2018): English Reddit comments in shared European subreddits, with author L1 inferred from country flair. target=German L1 (non-native, y=1) vs baseline=native UK/US (y=0); the distinguishing signal is grammatical/stylistic rather than topical. null_split_a vs null_split_b is a seeded within-German negative control.",
+    "cohorts": [
+        {
+            "name": "target",
+            "group": "target",
+            "display_name": "German L1 (non-native English, y=1)",
+            "description": "Reddit-L2 europe_data comments by users with a German country flair (r/europe, r/AskEurope). English-as-second-language writers; the y=1 target cohort."
+        },
+        {
+            "name": "baseline",
+            "group": "baseline",
+            "display_name": "Native English (UK/US flairs, y=0)",
+            "description": "Reddit-L2 europe_data comments by users with UK or US country flair (native English speakers); the y=0 baseline cohort."
+        },
+        {
+            "name": "null_split_a",
+            "group": "target",
+            "display_name": "German null split A",
+            "description": "Seeded random half of an INDEPENDENT pool of German-flair authors, disjoint from the target cohort. Same L1/distribution as null_split_b — the negative-control partner."
+        },
+        {
+            "name": "null_split_b",
+            "group": "target",
+            "display_name": "German null split B",
+            "description": "The other seeded half of the independent German-flair author pool. Paired with null_split_a to check the pipeline reports a null when both sides share one L1."
+        }
+    ],
+    "comparisons": [
+        {
+            "name": "target_vs_baseline",
+            "target_cohort": "target",
+            "baseline_cohort": "baseline",
+            "expectation": "distinguishable",
+            "explorations": true,
+            "expected_accuracy": 0.91,
+            "notes": "Positive control (known-target L1 axis). Goldin et al. 2018 report 91.07% in-domain binary native/non-native accuracy with content features. Signal is grammatical/stylistic, NOT topical: all cohorts post in the shared r/europe subreddits, so syntactic and semantic dimensions should fire while topical JSD stays comparatively low. Flair-derived L1 labels are self-selected and noisy, which caps achievable accuracy below a clean-label ceiling."
+        },
+        {
+            "name": "null_control",
+            "target_cohort": "null_split_a",
+            "baseline_cohort": "null_split_b",
+            "expectation": "null",
+            "explorations": false,
+            "expected_accuracy": 0.0,
+            "notes": "Negative control: a seeded random author-split of one group (German L1). Same distribution on both sides -> expect C2ST ~0.5, no BH survivors, and a null MMD."
+        }
+    ]
+}

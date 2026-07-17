@@ -1,0 +1,92 @@
+{
+    "name": "prism",
+    "description": "PRISM alignment survey (HannahRoseKirk/prism-alignment): real first-turn user prompts from unguided conversations, labelled by gold-survey gender (female target y=1 vs male baseline y=0). Human text CC-BY-4.0. Subsampled with author structure preserved; z/d/c partially filled from the survey (see README).",
+    "cohorts": [
+        {
+            "name": "target",
+            "group": "target",
+            "display_name": "Female users (y=1)",
+            "description": "PRISM users who self-reported gender Female (gold survey). x = first-turn user prompt from unguided conversations."
+        },
+        {
+            "name": "baseline",
+            "group": "baseline",
+            "display_name": "Male users (y=0)",
+            "description": "PRISM users who self-reported gender Male (gold survey). x = first-turn user prompt from unguided conversations."
+        },
+        {
+            "name": "null_split_a",
+            "group": "target",
+            "display_name": "Female split A (null control)",
+            "description": "Seeded random half of the female (target) authors — negative control partner for null_split_b (same underlying group)."
+        },
+        {
+            "name": "null_split_b",
+            "group": "target",
+            "display_name": "Female split B (null control)",
+            "description": "Seeded random other half of the female (target) authors — negative control partner for null_split_a."
+        },
+        {
+            "name": "target_n12",
+            "group": "target",
+            "display_name": "Female users, n=12 (power)",
+            "description": "Seeded 12-author subsample of the target cohort."
+        },
+        {
+            "name": "baseline_n12",
+            "group": "baseline",
+            "display_name": "Male users, n=12 (power)",
+            "description": "Seeded 12-author subsample of the baseline cohort."
+        },
+        {
+            "name": "target_n24",
+            "group": "target",
+            "display_name": "Female users, n=24 (power)",
+            "description": "Seeded 24-author subsample of the target cohort."
+        },
+        {
+            "name": "baseline_n24",
+            "group": "baseline",
+            "display_name": "Male users, n=24 (power)",
+            "description": "Seeded 24-author subsample of the baseline cohort."
+        }
+    ],
+    "comparisons": [
+        {
+            "name": "target_vs_baseline",
+            "target_cohort": "target",
+            "baseline_cohort": "baseline",
+            "expectation": "",
+            "explorations": true,
+            "expected_accuracy": 0.0,
+            "notes": "Modality match (real first-turn LLM prompts). Female (y=1) vs male (y=0), unguided conversations only. Exploratory: no published per-prompt gender-separability benchmark for PRISM."
+        },
+        {
+            "name": "null_control",
+            "target_cohort": "null_split_a",
+            "baseline_cohort": "null_split_b",
+            "expectation": "null",
+            "explorations": false,
+            "expected_accuracy": 0.0,
+            "notes": "Negative control: seeded random author-split within the female (target) group. Expect C2ST~0.5, 0 BH survivors, null MMD."
+        },
+        {
+            "name": "target_vs_baseline_n12",
+            "target_cohort": "target_n12",
+            "baseline_cohort": "baseline_n12",
+            "expectation": "",
+            "explorations": false,
+            "expected_accuracy": 0.0,
+            "notes": "power analysis n=12 authors per side"
+        },
+        {
+            "name": "target_vs_baseline_n24",
+            "target_cohort": "target_n24",
+            "baseline_cohort": "baseline_n24",
+            "expectation": "",
+            "explorations": false,
+            "expected_accuracy": 0.0,
+            "notes": "power analysis n=24 authors per side"
+        }
+    ]
+}

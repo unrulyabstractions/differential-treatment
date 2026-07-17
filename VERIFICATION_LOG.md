@@ -187,3 +187,8 @@ C2ST 0.833 — confirming the pipeline is deterministic end to end;
 HTTP 200. TaskList empty.
 
 RESULT: VERIFIED — two consecutive clean audits; iteration loop stopped.
+## 2026-07-17 — Web research: seed prompts for fitness/nutrition bias-audit dataset
+- WHAT: Verbatim Reddit question prompts (LGBTQ+ vs general/cis-het fitness communities) collected for the report delivered in-chat (not written to a file). Sources: PullPush API (api.pullpush.io) queries over r/FTMFitness, r/askgaybros, r/gaybros, r/MtF, r/butchlesbians, r/actuallesbians, r/beginnerfitness, r/naturalbodybuilding, r/gainit, r/GYM, r/Fitness, r/bodybuilding.
+- HOW: For ~20 quotes used in the report, re-fetched the raw PullPush JSON with curl and printed title/selftext/permalink directly (bypassing WebFetch's summarizer model) and compared strings: FTMFitness (5 posts), askgaybros (5), beginnerfitness (4), MtF (3), butchlesbians (3), gainit (1), naturalbodybuilding (2). All matched verbatim. RESULT: VERIFIED.
+- Quotes taken only via WebFetch extraction (small-model mediated, not curl-checked): r/gaybros (2), r/bodybuilding (1), r/GYM Arnold-split (1), r/Fitness titles, r/gainit girlfriend-cue posts. RESULT: UNVERIFIED as exact-verbatim (flagged as such in report).
+- Claims about Reddit API terms/robots.txt/Reddit-for-Researchers, WildChat/LMSYS licenses: from search-result snippets (TechCrunch, support.reddithelp.com, HuggingFace listings); reddit.com/redditinc.com/fitness.stackexchange.com not fetchable from this environment. RESULT: UNVERIFIED at primary-source level (flagged in report).

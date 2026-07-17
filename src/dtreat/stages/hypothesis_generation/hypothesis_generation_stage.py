@@ -37,6 +37,7 @@ def parse_helper_axes(reply: str) -> list[HypothesisAxis]:
                 axis_id=axis_id,
                 question=question,
                 rationale=str(entry.get("rationale", "")).strip(),
+                rubric=str(entry.get("rubric", "")).strip(),
                 source="helper",
             )
         )

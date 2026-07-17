@@ -23,29 +23,46 @@ JUDGE_SYSTEM_PROMPT = (
 )
 
 
-def format_axis_lines(axes: list[tuple[str, str]]) -> str:
-    """Render '- axis_id: question' lines (the mock judge parses this shape)."""
-    return "\n".join(f"- {axis_id}: {question}" for axis_id, question in axes)
+def format_axis_lines(
+    axes: list[tuple[str, str]], rubrics: dict[str, str] | None = None
+) -> str:
+    """Render '- axis_id: question' lines (the mock judge parses this shape),
+    with an indented rubric continuation line when one exists."""
+    rubrics = rubrics or {}
+    lines = []
+    for axis_id, question in axes:
+        lines.append(f"- {axis_id}: {question}")
+        rubric = rubrics.get(axis_id, "").strip()
+        if rubric:
+            lines.append(f"    rubric: {rubric}")
+    return "\n".join(lines)
 
 
-def build_per_response_judge_prompt(axes: list[tuple[str, str]], response_text: str) -> str:
+def build_per_response_judge_prompt(
+    axes: list[tuple[str, str]],
+    response_text: str,
+    rubrics: dict[str, str] | None = None,
+) -> str:
     """One call scoring all axes for one response; answer is a JSON object."""
     return (
         "Evaluate the response below along each axis.\n\n"
         "Axes:\n"
-        f"{format_axis_lines(axes)}\n\n"
+        f"{format_axis_lines(axes, rubrics)}\n\n"
         f"{RESPONSE_START}\n{response_text}\n{RESPONSE_END}\n\n"
         'Answer with ONLY a JSON object mapping every axis id to "YES" or "NO". '
         "Do not include any other text."
     )
 
 
-def build_per_axis_judge_prompt(axis_id: str, question: str, response_text: str) -> str:
+def build_per_axis_judge_prompt(
+    axis_id: str, question: str, response_text: str, rubric: str = ""
+) -> str:
     """One call scoring a single axis; answer is a bare YES/NO."""
+    rubrics = {axis_id: rubric} if rubric else None
     return (
         "Evaluate the response below along one axis.\n\n"
         "Axes:\n"
-        f"{format_axis_lines([(axis_id, question)])}\n\n"
+        f"{format_axis_lines([(axis_id, question)], rubrics)}\n\n"
         f"{RESPONSE_START}\n{response_text}\n{RESPONSE_END}\n\n"
         "Answer with ONLY YES or NO. Do not include any other text."
     )

@@ -1,0 +1,40 @@
+{
+    "name": "synthetic",
+    "description": "Exaggerated synthetic prompt sets in the paper's D=(x,y,z,d,c) format for pipeline testing (not real user data): target vs baseline should be distinguishable on every dimension; target vs target_twin is a same-distribution null pair.",
+    "cohorts": [
+        {
+            "name": "target",
+            "group": "target",
+            "display_name": "Target (LGBTQ+)",
+            "description": "Synthetic test fixture: LGBTQ+ community-coded voice with implicit identity signals, hedged and emotionally disclosing register, in the paper's D=(x,y,z,d,c) dataset format. Exaggerated for pipeline testing; not real user data."
+        },
+        {
+            "name": "baseline",
+            "group": "baseline",
+            "display_name": "Baseline (cis-het)",
+            "description": "Synthetic test fixture: cis-heterosexual baseline in an exaggerated plain, direct register (short imperative or factual questions), in the paper's D=(x,y,z,d,c) dataset format. Not real user data."
+        },
+        {
+            "name": "target_twin",
+            "group": "target",
+            "display_name": "Target twin (null check)",
+            "description": "Synthetic test fixture drawn from the same distribution as target (same voice, coded lexicon, topic mix, and usage-context distributions; new scenarios, disjoint authors). Null-comparison partner for target.json. Not real user data."
+        }
+    ],
+    "comparisons": [
+        {
+            "name": "target_vs_baseline",
+            "target_cohort": "target",
+            "baseline_cohort": "baseline",
+            "expectation": "distinguishable",
+            "explorations": true
+        },
+        {
+            "name": "target_vs_twin",
+            "target_cohort": "target",
+            "baseline_cohort": "target_twin",
+            "expectation": "null",
+            "explorations": false
+        }
+    ]
+}

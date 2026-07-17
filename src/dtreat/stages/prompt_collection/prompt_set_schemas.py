@@ -10,11 +10,17 @@ from dtreat.common.base_schema import BaseSchema
 @dataclass
 class PromptRecord(BaseSchema):
     """One prompt from a community, annotated with its underlying instruction
-    (the iota(x) mapping of Eq 2 — what is being asked, independent of voice)."""
+    (the iota(x) mapping of Eq 2 — what is being asked, independent of voice).
+
+    instruction_id may be empty on input when the config uses extraction
+    (`annotate_instructions: "extract"`); stage 1 then fills it in.
+    """
 
     prompt_id: str
     text: str
-    instruction_id: str
+    instruction_id: str = ""
+    instruction_phrase: str = ""  # free-text phrase before canonicalization
+    instruction_source: str = "provided"  # "provided" | "extracted"
 
 
 @dataclass
@@ -55,9 +61,34 @@ class ComparabilityReport(BaseSchema):
 
 
 @dataclass
+class InstructionMatchOutcome(BaseSchema):
+    """Kept/dropped counts for one instruction id during frequency matching."""
+
+    instruction_id: str
+    kept_per_side: int
+    dropped_target: int
+    dropped_baseline: int
+
+
+@dataclass
+class FrequencyMatchingReport(BaseSchema):
+    """What frequency matching kept and dropped (empty when disabled)."""
+
+    enabled: bool = False
+    outcomes: list[InstructionMatchOutcome] = field(default_factory=list)
+    dropped_prompt_ids: list[str] = field(default_factory=list)
+
+    def total_dropped(self) -> int:
+        return len(self.dropped_prompt_ids)
+
+
+@dataclass
 class PromptStageArtifact(BaseSchema):
-    """Stage-1 output: both validated prompt sets + the comparability report."""
+    """Stage-1 output: both validated (possibly annotated/matched) prompt sets,
+    the comparability report, and what frequency matching dropped."""
 
     target_set: CommunityPromptFile
     baseline_set: CommunityPromptFile
     comparability: ComparabilityReport
+    annotator_model: str = ""
+    matching: FrequencyMatchingReport = field(default_factory=FrequencyMatchingReport)

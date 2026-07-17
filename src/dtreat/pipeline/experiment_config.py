@@ -40,6 +40,14 @@ class ExperimentConfig(BaseSchema):
     target_model: str = "mock:target:biased"
     judge_model: str = "mock:judge"
 
+    # Stage 1 — instruction annotation + comparability
+    # "provided": prompt files carry instruction_id; "extract": an annotator
+    # LLM infers and canonicalizes instructions (paper §3.1's iota mapping)
+    annotate_instructions: str = "provided"
+    annotator_model: str = "mock:annotator"
+    # subsample both sets to exactly matching instruction distributions
+    match_instruction_frequencies: bool = False
+
     # Stage 2 — hypothesis generation
     max_axes: int = 8
     seed_hypotheses: list[str] = field(default_factory=list)
@@ -54,6 +62,9 @@ class ExperimentConfig(BaseSchema):
     judge_mode: str = "per_response"  # "per_response" (one call, all axes) | "per_axis"
     judge_max_tokens: int = 300
     judge_temperature: float = 0.0
+    # panel: extra judge models scored simultaneously alongside judge_model
+    judge_models: list[str] = field(default_factory=list)
+    judge_aggregation: str = "majority"  # "majority" | "unanimous" | "any"
 
     # Stage 5 — analysis
     epsilon: float = 0.01
@@ -67,6 +78,11 @@ class ExperimentConfig(BaseSchema):
     max_workers: int = 8
     comparability_max_tv_distance: float = 0.2  # Eq 3 tolerance before stage 1 fails
 
+    def judge_panel(self) -> list[str]:
+        """All judge models for stage 4, primary first, de-duplicated."""
+        panel = [self.judge_model] + [m for m in self.judge_models if m != self.judge_model]
+        return list(dict.fromkeys(panel))
+
     @classmethod
     def from_config_file(cls, path: str | Path) -> ExperimentConfig:
         config = cls.from_json(Path(path))
@@ -78,8 +94,12 @@ class ExperimentConfig(BaseSchema):
         problems = []
         if self.samples_per_prompt < 1:
             problems.append("samples_per_prompt must be >= 1")
+        if self.annotate_instructions not in ("provided", "extract"):
+            problems.append(f"unknown annotate_instructions '{self.annotate_instructions}'")
         if self.judge_mode not in ("per_response", "per_axis"):
             problems.append(f"unknown judge_mode '{self.judge_mode}'")
+        if self.judge_aggregation not in ("majority", "unanimous", "any"):
+            problems.append(f"unknown judge_aggregation '{self.judge_aggregation}'")
         if self.permutation_unit not in ("prompt", "response"):
             problems.append(f"unknown permutation_unit '{self.permutation_unit}'")
         if not 0.0 < self.c2st_test_fraction < 1.0:

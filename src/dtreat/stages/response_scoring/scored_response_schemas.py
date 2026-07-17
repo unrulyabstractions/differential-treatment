@@ -11,9 +11,11 @@ from dtreat.common.base_schema import BaseSchema
 class ScoredResponse(BaseSchema):
     """One response's behavior characterization z = Lambda(y) (Eq 5).
 
-    verdicts maps axis_id -> True/False; axes the judge failed to answer
-    are listed in unparsed_axes and excluded from statistics rather than
-    silently coerced.
+    `verdicts` is the panel-aggregated verdict per axis (single judge: that
+    judge's verdict). Per-judge verdicts are kept in `verdicts_by_judge` for
+    calibration. Axes with no aggregate verdict (judge failed to answer, or
+    the panel tied/disagreed under the aggregation rule) are listed in
+    unparsed_axes and excluded from statistics rather than silently coerced.
     """
 
     response_id: str
@@ -23,15 +25,17 @@ class ScoredResponse(BaseSchema):
     refused: bool
     verdicts: dict[str, bool] = field(default_factory=dict)
     unparsed_axes: list[str] = field(default_factory=list)
-    raw_judge_reply: str = ""
+    verdicts_by_judge: dict[str, dict] = field(default_factory=dict)
+    raw_judge_replies: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
 class ScoringManifest(BaseSchema):
     """Stage-4 summary: coverage, judge accounting, parse health."""
 
-    judge_model: str
+    judge_models: list[str]
     judge_mode: str
+    judge_aggregation: str
     axis_ids: list[str]
     scored_responses: int
     skipped_refusals: int

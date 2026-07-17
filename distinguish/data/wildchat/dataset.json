@@ -1,0 +1,50 @@
+{
+    "name": "wildchat",
+    "description": "First user turns of English WildChat-1M conversations (allenai/WildChat-1M shard 0/14, ODC-BY). y = country proxy: United Kingdom vs United States; author = hashed IP (imperfect). Modality-match (real chatbot prompts) + scale/asymptotics dataset per the Iter4 validation design; no published separability benchmark. Includes a seeded same-group null split.",
+    "cohorts": [
+        {
+            "name": "target",
+            "group": "target",
+            "display_name": "United Kingdom prompts (y=1)",
+            "description": "English first-turn prompts, first-turn country United Kingdom."
+        },
+        {
+            "name": "baseline",
+            "group": "baseline",
+            "display_name": "United States prompts (y=0)",
+            "description": "English first-turn prompts, first-turn country United States."
+        },
+        {
+            "name": "null_split_a",
+            "group": "baseline",
+            "display_name": "United States null split A (y=0)",
+            "description": "Random half of extra United States authors (disjoint from baseline); negative control."
+        },
+        {
+            "name": "null_split_b",
+            "group": "baseline",
+            "display_name": "United States null split B (y=0)",
+            "description": "Other random half of the same extra United States authors; negative control."
+        }
+    ],
+    "comparisons": [
+        {
+            "name": "target_vs_baseline",
+            "target_cohort": "target",
+            "baseline_cohort": "baseline",
+            "expectation": "",
+            "explorations": true,
+            "expected_accuracy": 0.0,
+            "notes": "Exploratory country contrast (United Kingdom vs United States); no published benchmark (expected_accuracy 0.0). y is a PROXY label (first-turn IP geolocation, not self-reported identity) and author = hashed IP (IPs shift/shared). Role: modality match + scale/asymptotics — MMD power and C2ST convergence at large n via a --n-authors rerun."
+        },
+        {
+            "name": "null_split",
+            "target_cohort": "null_split_a",
+            "baseline_cohort": "null_split_b",
+            "expectation": "null",
+            "explorations": false,
+            "expected_accuracy": 0.0,
+            "notes": "Negative control: seeded random author split WITHIN one group (extra United States authors, disjoint from baseline). Expect C2ST ~= 0.5, zero BH survivors, null MMD."
+        }
+    ]
+}

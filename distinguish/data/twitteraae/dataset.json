@@ -1,0 +1,50 @@
+{
+    "name": "twitteraae",
+    "description": "TwitterAAE (Blodgett/Green/O'Connor EMNLP 2016, research-use): tweet text, cohorts by the demographic model's posterior alignment - AA-aligned (>=0.8, target) vs White-aligned (>=0.8, baseline) - plus a null author split within the White-aligned pool. SMOKE TEST ONLY: the label is assigned from the text, so separability is circular. One prompt per author (row-index author ids). See data/twitteraae/README.md.",
+    "cohorts": [
+        {
+            "name": "target",
+            "group": "target",
+            "display_name": "AA-aligned tweets (y=1)",
+            "description": "Tweets with African-American posterior >= 0.8 under the Blodgett et al. mixed-membership demographic model."
+        },
+        {
+            "name": "baseline",
+            "group": "baseline",
+            "display_name": "White-aligned tweets (y=0)",
+            "description": "Tweets with White posterior >= 0.8 under the same model."
+        },
+        {
+            "name": "null_split_a",
+            "group": "target",
+            "display_name": "Null split A (White-aligned)",
+            "description": "Random half of held-out White-aligned tweets (seeded); null-control cohort."
+        },
+        {
+            "name": "null_split_b",
+            "group": "baseline",
+            "display_name": "Null split B (White-aligned)",
+            "description": "Other random half of held-out White-aligned tweets (seeded); null-control cohort."
+        }
+    ],
+    "comparisons": [
+        {
+            "name": "target_vs_baseline",
+            "target_cohort": "target",
+            "baseline_cohort": "baseline",
+            "expectation": "distinguishable",
+            "explorations": true,
+            "expected_accuracy": 0.0,
+            "notes": "End-to-end smoke test (validation-design role: ALL modules must fire). CIRCULAR by construction - smoke test ONLY: every module must fire (many BH survivors, huge MMD, C2ST >> 0.5); a silent module is broken. Document that success says NOTHING about detecting self-reported identity. The y label was assigned FROM the tweet text (posterior of Blodgett et al.'s lexical demographic model >= 0.8), so any lexical/semantic separability is definitional, not a discovery."
+        },
+        {
+            "name": "null_split",
+            "target_cohort": "null_split_a",
+            "baseline_cohort": "null_split_b",
+            "expectation": "null",
+            "explorations": false,
+            "expected_accuracy": 0.5,
+            "notes": "Negative control: seeded random author split within the White-aligned pool (disjoint from the baseline cohort). Expect C2ST ~= 0.5, zero BH survivors, null MMD."
+        }
+    ]
+}

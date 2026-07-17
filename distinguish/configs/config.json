@@ -1,0 +1,185 @@
+{
+    "_description": "Complete-analysis defaults. include_attributional runs the §3.3.5 residual-probe token attribution + Opus concept naming.",
+    "run_name": "",
+    "dimensions": [
+        "lexical",
+        "syntactic",
+        "semantic",
+        "distributional",
+        "topical",
+        "interactional"
+    ],
+    "include_usage_attitudes": true,
+    "include_attributional": false,
+    "random_seed": 0,
+    "lexical": {
+        "min_word_count": 2,
+        "prior_calibration": "mickel",
+        "reference_corpus": "wordfreq:en",
+        "reference_prior_weight": 0.6,
+        "calibration_constant": "auto",
+        "english_prior_weight": 0.5,
+        "prior_strength": 500.0,
+        "significance": "bh_fdr",
+        "fdr_alpha": 0.05,
+        "top_words_reported": 25,
+        "calibration_plots": true
+    },
+    "syntactic": {
+        "model_name": "Blablablab/neurobiber",
+        "batch_size": 16,
+        "smoothing_count": 0.5,
+        "fdr_alpha": 0.05,
+        "top_features_reported": 20
+    },
+    "semantic": {
+        "text_embedders": [
+            "sentence-transformers/all-MiniLM-L6-v2",
+            "openai:text-embedding-3-small",
+            "cohere:embed-v4.0"
+        ],
+        "residual_models": [
+            "Qwen/Qwen3-1.7B",
+            "meta-llama/Llama-3.2-1B-Instruct",
+            "google/gemma-2-2b-it"
+        ],
+        "residual_layer_fraction": 0.75,
+        "significance_alpha": 0.05
+    },
+    "distributional": {
+        "embedders": [
+            "sentence-transformers/all-MiniLM-L6-v2",
+            "openai:text-embedding-3-small",
+            "cohere:embed-v4.0"
+        ],
+        "residual_models": [],
+        "residual_layer_fraction": 0.75,
+        "classifiers": [
+            "linear",
+            "modernbert"
+        ],
+        "cv_folds": 5,
+        "n_permutations": 200,
+        "modernbert_model_name": "answerdotai/ModernBERT-base",
+        "modernbert_epochs": 3,
+        "modernbert_learning_rate": 2e-05,
+        "significance_alpha": 0.05
+    },
+    "topical": {
+        "assignment_backends": [
+            "embedding",
+            "openai:gpt-5-mini",
+            "topicgpt:gpt-5-mini"
+        ],
+        "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+        "n_permutations": 1000,
+        "significance_alpha": 0.05,
+        "topicgpt_merge_similarity": 0.5,
+        "topicgpt_prune_fraction": 0.01,
+        "topicgpt_early_stop": 25,
+        "topicgpt_max_generation_docs": 400
+    },
+    "interactional": {
+        "annotation_backends": [
+            "embedding",
+            "openai:gpt-5-mini"
+        ],
+        "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+        "n_permutations": 1000,
+        "significance_alpha": 0.05
+    },
+    "usage": {
+        "fdr_alpha": 0.05
+    },
+    "attributional": {
+        "probe_model": "google/gemma-2-2b-it",
+        "layer_fraction": 0.75,
+        "n_examples": 12,
+        "n_highlight_tokens": 6,
+        "concept_model": "claude-opus-4-8"
+    },
+    "explorations": {
+        "run_implicit_breakdown": true,
+        "codedness_thresholds": [
+            0.25,
+            0.5,
+            0.75
+        ],
+        "include_markedness_splits": true,
+        "run_slices": true,
+        "slices": [
+            {
+                "facet": "transgender",
+                "name": "trans",
+                "z_field": "transgender",
+                "op": "eq",
+                "value": "1",
+                "apply_to": "target"
+            },
+            {
+                "facet": "gender",
+                "name": "women",
+                "z_field": "gender",
+                "op": "contains",
+                "value": "woman",
+                "apply_to": "both"
+            },
+            {
+                "facet": "gender",
+                "name": "men",
+                "z_field": "gender",
+                "op": "contains",
+                "value": "man",
+                "apply_to": "both"
+            },
+            {
+                "facet": "gender",
+                "name": "nonbinary",
+                "z_field": "gender",
+                "op": "contains",
+                "value": "nonbinary",
+                "apply_to": "target"
+            },
+            {
+                "facet": "race",
+                "name": "poc",
+                "z_field": "race",
+                "op": "not_contains",
+                "value": "White/Caucasian",
+                "apply_to": "both"
+            },
+            {
+                "facet": "race",
+                "name": "white",
+                "z_field": "race",
+                "op": "contains",
+                "value": "white",
+                "apply_to": "both"
+            },
+            {
+                "facet": "age",
+                "name": "under35",
+                "z_field": "age",
+                "op": "in",
+                "value": "13-17,18-24,25-34",
+                "apply_to": "both"
+            },
+            {
+                "facet": "age",
+                "name": "35plus",
+                "z_field": "age",
+                "op": "in",
+                "value": "35-44,45-54,55-64,65-74,75-84,85-94,95+",
+                "apply_to": "both"
+            }
+        ],
+        "run_conditional": true,
+        "conditioning_variables": [
+            "domain",
+            "provenance"
+        ],
+        "full_outputs": true,
+        "n_permutations": 500,
+        "min_prompts_per_side": 8
+    }
+}

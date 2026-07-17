@@ -1,0 +1,180 @@
+"""Collect real community fitness prompts from the PullPush Reddit archive.
+
+Builds LOCAL-ONLY prompt files (data/prompts/real_* is gitignored — community
+data stewardship: collected user content never leaves this machine).
+
+Curated post ids were research-verified against raw PullPush JSON: public
+posts, fitness/nutrition questions, no explicit identity statements needed
+(community shows through register/context), no self-identified minors, no
+usernames collected. Instruction ids are left empty — stage 1's extraction
+mode (`annotate_instructions: "extract"`) infers and matches them.
+
+Usage:
+    uv run python scripts/collect_reddit_prompts.py
+"""
+
+from __future__ import annotations
+
+import json
+import sys
+import time
+import urllib.request
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+from dtreat.common.file_io import load_json, save_json
+from dtreat.llm.api_retry import call_with_retry
+
+OUT_DIR = Path(__file__).parent.parent / "data" / "prompts"
+PULLPUSH_URL = "https://api.pullpush.io/reddit/search/submission/?ids={post_id}"
+
+# (post_id, subreddit) — curated + verified by prior research pass
+TARGET_POST_IDS = [
+    ("1knf4jr", "FTMFitness"),
+    ("1kogtps", "FTMFitness"),
+    ("1kbw07m", "FTMFitness"),
+    ("1kkd29v", "FTMFitness"),
+    ("1ke2cej", "FTMFitness"),
+    ("1koh5va", "askgaybros"),
+    ("1kd4cd5", "askgaybros"),
+    ("1k8j69e", "askgaybros"),
+    ("1jodmy9", "askgaybros"),
+    ("1kn2ohf", "butchlesbians"),
+    ("1ixbwyd", "butchlesbians"),
+    ("1kq05bb", "MtF"),
+    ("1kjnu9y", "MtF"),
+    ("1klv5p4", "MtF"),
+]
+BASELINE_POST_IDS = [
+    ("1kobouf", "beginnerfitness"),
+    ("1klxchi", "beginnerfitness"),
+    ("1kha6bp", "beginnerfitness"),
+    ("1kfvxgf", "beginnerfitness"),
+    ("1fvdxva", "gainit"),
+    ("1koeogh", "naturalbodybuilding"),
+    ("1khqbn1", "naturalbodybuilding"),
+]
+
+# Top-up sweep for the baseline side (dense, low-sensitivity): keyword queries
+# against beginner-fitness subreddits; every hit still passes the same filters.
+BASELINE_SWEEPS = [
+    ("beginnerfitness", "protein"),
+    ("beginnerfitness", "plateau"),
+    ("naturalbodybuilding", "cutting"),
+    ("gainit", "bulk"),
+]
+SWEEP_URL = (
+    "https://api.pullpush.io/reddit/search/submission/"
+    "?subreddit={subreddit}&q={query}&size=10"
+)
+MAX_BASELINE_PROMPTS = 14
+
+# Never include content from posters who self-identify as minors, and skip
+# removed/deleted or trivially short bodies.
+EXCLUSION_MARKERS = ("i'm underage", "im underage", "i am underage", "i'm a minor")
+
+
+def fetch_json(url: str) -> dict:
+    def _do_fetch() -> dict:
+        request = urllib.request.Request(
+            url, headers={"User-Agent": "dtreat-local-research"}
+        )
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+    # PullPush rate-limits aggressively; back off patiently and stay polite
+    result = call_with_retry(
+        _do_fetch, max_retries=6, base_delay_s=10.0, max_delay_s=120.0, label="pullpush"
+    )
+    time.sleep(2.0)
+    return result
+
+
+def usable_text(post: dict) -> str | None:
+    title = (post.get("title") or "").strip()
+    body = (post.get("selftext") or "").strip()
+    if body.lower() in ("[removed]", "[deleted]"):
+        return None
+    text = f"{title}\n\n{body}".strip() if body else title
+    lowered = text.lower()
+    if any(marker in lowered for marker in EXCLUSION_MARKERS):
+        return None
+    if len(text) < 80:
+        return None
+    return text
+
+
+def collect_by_ids(post_ids: list[tuple[str, str]], prefix: str) -> list[dict]:
+    prompts = []
+    for post_id, subreddit in post_ids:
+        data = fetch_json(PULLPUSH_URL.format(post_id=post_id))
+        posts = data.get("data", [])
+        text = usable_text(posts[0]) if posts else None
+        if text is None:
+            print(f"  [skip] {subreddit}/{post_id}: removed/excluded/missing")
+            continue
+        prompts.append(
+            {
+                "prompt_id": f"{prefix}_{post_id}",
+                "text": text,
+                "instruction_id": "",
+                "source_permalink": f"reddit.com/r/{subreddit}/comments/{post_id}/",
+            }
+        )
+        time.sleep(0.5)  # be polite to the archive
+    return prompts
+
+
+def sweep_baseline(existing: list[dict]) -> list[dict]:
+    seen_ids = {p["prompt_id"].split("_")[-1] for p in existing}
+    prompts = list(existing)
+    for subreddit, query in BASELINE_SWEEPS:
+        if len(prompts) >= MAX_BASELINE_PROMPTS:
+            break
+        data = fetch_json(SWEEP_URL.format(subreddit=subreddit, query=query))
+        for post in data.get("data", []):
+            if len(prompts) >= MAX_BASELINE_PROMPTS:
+                break
+            post_id = post.get("id", "")
+            text = usable_text(post)
+            if not post_id or post_id in seen_ids or text is None:
+                continue
+            seen_ids.add(post_id)
+            prompts.append(
+                {
+                    "prompt_id": f"b_reddit_{post_id}",
+                    "text": text,
+                    "instruction_id": "",
+                    "source_permalink": f"reddit.com/r/{subreddit}/comments/{post_id}/",
+                }
+            )
+        time.sleep(0.5)
+    return prompts
+
+
+def main() -> None:
+    print("Collecting target-community prompts (curated ids)...")
+    target_prompts = collect_by_ids(TARGET_POST_IDS, "t_reddit")
+    print(f"  {len(target_prompts)} target prompts")
+    print("Collecting baseline prompts (curated ids + sweep)...")
+    baseline_prompts = collect_by_ids(BASELINE_POST_IDS, "b_reddit")
+    baseline_prompts = sweep_baseline(baseline_prompts)
+    print(f"  {len(baseline_prompts)} baseline prompts")
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    save_json(
+        {"community": "lgbtq", "domain": "fitness_nutrition_advice", "prompts": target_prompts},
+        OUT_DIR / "real_reddit_lgbtq.json",
+    )
+    save_json(
+        {"community": "cishet", "domain": "fitness_nutrition_advice", "prompts": baseline_prompts},
+        OUT_DIR / "real_reddit_cishet.json",
+    )
+    for name in ("real_reddit_lgbtq.json", "real_reddit_cishet.json"):
+        reloaded = load_json(OUT_DIR / name)
+        print(f"wrote {OUT_DIR / name} ({len(reloaded['prompts'])} prompts) — LOCAL ONLY")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,50 @@
+{
+    "name": "thoughttrace",
+    "description": "ThoughtTrace (SCAI-JHU/ThoughtTrace, CC-BY-4.0): real user turns from human-LLM conversations, cohorts by survey-reported gender (female target vs male baseline) plus a null author split within the female pool. Texts truncated to <=120 words; see data/thoughttrace/README.md.",
+    "cohorts": [
+        {
+            "name": "target",
+            "group": "target",
+            "display_name": "Female users (y=1)",
+            "description": "ThoughtTrace users self-reporting gender=Female in the exit survey."
+        },
+        {
+            "name": "baseline",
+            "group": "baseline",
+            "display_name": "Male users (y=0)",
+            "description": "ThoughtTrace users self-reporting gender=Male in the exit survey."
+        },
+        {
+            "name": "null_split_a",
+            "group": "target",
+            "display_name": "Null split A (female)",
+            "description": "Random half of held-out female users (seeded); null-control cohort."
+        },
+        {
+            "name": "null_split_b",
+            "group": "baseline",
+            "display_name": "Null split B (female)",
+            "description": "Other random half of held-out female users (seeded); null-control cohort."
+        }
+    ],
+    "comparisons": [
+        {
+            "name": "target_vs_baseline",
+            "target_cohort": "target",
+            "baseline_cohort": "baseline",
+            "expectation": "",
+            "explorations": true,
+            "expected_accuracy": 0.0,
+            "notes": "Modality-match validation (real LLM prompts): y = self-reported gender (gold exit survey), female vs male. No published separability benchmark - exploratory. Observer-aware study: participants knew turns and thoughts were being recorded, which may shift register."
+        },
+        {
+            "name": "null_split",
+            "target_cohort": "null_split_a",
+            "baseline_cohort": "null_split_b",
+            "expectation": "null",
+            "explorations": false,
+            "expected_accuracy": 0.5,
+            "notes": "Negative control: seeded random author split within the female pool (disjoint from target cohort authors). Expect C2ST ~= 0.5, zero BH survivors, null MMD."
+        }
+    ]
+}

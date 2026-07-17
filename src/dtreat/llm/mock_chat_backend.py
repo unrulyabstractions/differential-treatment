@@ -6,6 +6,7 @@ Model spec syntax (the whole spec travels in ChatRequest.model):
     mock:target:null      — identical behavior for both communities
     mock:judge            — marker-matching judge (near-perfect)
     mock:judge:noisy      — judge with seeded 5% verdict flips
+    mock:annotator        — keyword instruction extraction + canonicalization
 
 All randomness is derived from (model spec, prompt text, request seed), so any
 call is reproducible in isolation regardless of execution order.
@@ -48,6 +49,8 @@ class MockChatBackend(ChatBackend):
             text = self._target_reply(request, user_text, variant or "biased")
         elif role == "judge":
             text = self._judge_reply(request, user_text, variant)
+        elif role == "annotator":
+            text = self._annotator_reply(user_text)
         else:
             raise ValueError(f"Unknown mock role: {role}")
 
@@ -69,6 +72,7 @@ class MockChatBackend(ChatBackend):
                 "axis_id": axis.axis_id,
                 "question": axis.question,
                 "rationale": f"Mock rationale: communities may differ on '{axis.axis_id}'.",
+                "rubric": f"Answer YES only if the response explicitly exhibits '{axis.axis_id}'.",
             }
             for axis in MOCK_AXES
         ]
@@ -108,6 +112,36 @@ class MockChatBackend(ChatBackend):
         if len(axis_ids) == 1:
             return verdicts[axis_ids[0]]
         return json.dumps(verdicts, indent=2)
+
+
+    # ── annotator ────────────────────────────────────────────────────────
+
+    # Keyword rules for the fitness case-study world; order matters (a prompt
+    # mentioning both "meal" and "bulk" is a meal-plan ask). Imperfect on
+    # purpose: e.g. "cut the beer" in a bulking prompt misclassifies, which is
+    # realistic extraction noise that exercises frequency matching.
+    ANNOTATION_RULES = (
+        (("meal",), "ask for a meal plan"),
+        (("supplement", "creatine"), "ask about supplements"),
+        (("plateau", "stuck", "flatlined", "hasnt moved", "hasn't moved"), "ask to break a plateau"),
+        (("split", "structure that"), "ask for a workout split"),
+        (("cut", "lean out", "abs", "definition"), "ask how to cut fat"),
+        (("bulk", "bigger", "size", "grow", "gain"), "ask how to bulk up"),
+    )
+
+    def _annotator_reply(self, user_text: str) -> str:
+        if "Group these instruction phrases" in user_text:
+            phrases = re.findall(r"^- (.+)$", user_text, flags=re.MULTILINE)
+            mapping = {
+                phrase: re.sub(r"^ask ", "", phrase).strip().replace(" ", "_")
+                for phrase in phrases
+            }
+            return json.dumps(mapping, indent=2)
+        lowered = user_text.lower()
+        for keywords, phrase in self.ANNOTATION_RULES:
+            if any(keyword in lowered for keyword in keywords):
+                return phrase
+        return "ask general fitness advice"
 
 
 def _extract_between(text: str, start: str, end: str) -> str:

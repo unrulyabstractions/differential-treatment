@@ -21,6 +21,12 @@ from dtreat.common.file_io import load_jsonl, save_json
 from dtreat.pipeline.experiment_config import ExperimentConfig
 from dtreat.pipeline.run_directory_paths import RunDirectoryPaths
 from dtreat.stages.hypothesis_generation.hypothesis_schemas import HypothesisSet
+from dtreat.stages.prompt_distinguishability.distinguish_bridge_stage import (
+    load_input_report_if_present,
+)
+from dtreat.stages.prompt_distinguishability.distinguish_report_schemas import (
+    InputOutputComparison,
+)
 from dtreat.stages.response_collection.response_record_schemas import ResponseRecord
 from dtreat.stages.response_scoring.scored_response_schemas import ScoredResponse
 
@@ -75,6 +81,7 @@ def run_treatment_analysis(
         ),
         c2st=_c2st_from_scored(scored, axis_ids, target_name, config),
         refusals=_refusal_analysis(paths, target_name),
+        input_output=None,
         prompt_rates=_prompt_rates(scored, axis_ids),
         n_permutations=config.n_permutations,
         permutation_unit=config.permutation_unit,
@@ -83,6 +90,7 @@ def run_treatment_analysis(
         seed=config.seed,
     )
 
+    report.input_output = _input_output_comparison(paths, report)
     save_json(report.to_dict(), paths.analysis_report_path)
     paths.analysis_summary_path.parent.mkdir(parents=True, exist_ok=True)
     paths.analysis_summary_path.write_text(render_analysis_summary(report))
@@ -245,6 +253,58 @@ def _prompt_rates(scored: list[ScoredResponse], axis_ids: list[str]) -> list[Pro
             )
         )
     return rates
+
+
+def _input_output_comparison(
+    paths: RunDirectoryPaths, report: AnalysisReport
+) -> InputOutputComparison | None:
+    """Compare input-side prompt legibility with output-side treatment
+    (present only when the distinguish bridge has run for this run)."""
+    input_report = load_input_report_if_present(paths)
+    if input_report is None:
+        return None
+    input_acc = input_report.best_c2st_accuracy
+    output_acc = report.c2st.accuracy if report.c2st else None
+    signal_usage = None
+    if input_acc is not None and output_acc is not None and input_acc > 0.5:
+        signal_usage = max(0.0, (output_acc - 0.5) / (input_acc - 0.5))
+    comparison = InputOutputComparison(
+        input_c2st_accuracy=input_acc,
+        input_n_significant=input_report.n_significant,
+        input_n_tests=input_report.n_tests,
+        output_c2st_accuracy=output_acc,
+        output_significant_axes=len(report.significant_axes()),
+        output_total_axes=len(report.axes),
+        output_d_pi_bits=report.d_pi_bits_significant_axes,
+        signal_usage=signal_usage,
+    )
+    comparison.interpretation = _interpret_input_output(comparison)
+    return comparison
+
+
+def _interpret_input_output(comparison: InputOutputComparison) -> str:
+    input_acc, output_acc = comparison.input_c2st_accuracy, comparison.output_c2st_accuracy
+    if input_acc is None or input_acc <= 0.55:
+        return (
+            "The prompt sets themselves are barely separable, so any treatment "
+            "difference cannot be attributed to community legibility of the inputs."
+        )
+    if comparison.signal_usage is None or output_acc is None:
+        return "Input prompts are community-legible; output separability was not measurable."
+    usage_pct = f"{comparison.signal_usage:.0%}"
+    if comparison.output_significant_axes == 0 and comparison.signal_usage < 0.25:
+        return (
+            f"Prompts are community-legible (input C2ST {input_acc:.2f}) but the "
+            f"model's behavior is close to indistinguishable (output C2ST "
+            f"{output_acc:.2f}): it carries ~{usage_pct} of the input signal into "
+            "behavior — little visible differential treatment on the tested axes."
+        )
+    return (
+        f"Prompts are community-legible (input C2ST {input_acc:.2f}) and the model "
+        f"acts on it: behavior separability {output_acc:.2f} carries ~{usage_pct} of "
+        f"the input signal, with {comparison.output_significant_axes} significant "
+        "treatment axes."
+    )
 
 
 def _fmt_bits(value: float | None) -> str:

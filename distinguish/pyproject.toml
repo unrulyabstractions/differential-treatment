@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prompt-distinguishability"
+version = "0.1.0"
+description = "Framework for measuring how distinguishable two prompt sets are across lexical, syntactic, semantic, distributional, and topical dimensions"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Ian Rios-Sialer", email = "ian@unrulyabstractions.com" }]
+requires-python = ">=3.11"
+keywords = ["nlp", "bias", "prompts", "two-sample-testing", "research"]
+
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "scikit-learn>=1.4",
+    "matplotlib>=3.8",
+    "tqdm>=4.66",
+    # Hugging Face ecosystem (NeuroBiber, ModernBERT, residual streams)
+    "torch>=2.3",
+    "transformers>=4.48",
+    "sentence-transformers>=3.0",
+    "safetensors",
+    "huggingface-hub",
+    # MMD-Fuse two-sample test (JAX implementation by the paper authors)
+    "jax>=0.4.30",
+    "mmdfuse",
+    # English word frequencies for the calibrated marked-words hybrid prior
+    "wordfreq>=3.0",
+    # Optional API embedding / topic-assignment backends
+    "openai>=1.0.0",
+    "pandas>=3.0.3",
+    "pyarrow>=24.0.0",
+    "cohere>=7.0.5",
+    "wordcloud>=1.9.6",
+    "value-nlp>=0.3",
+    "accelerate>=1.14.0",
+    "anthropic>=0.116.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/unrulyabstractions/prompt-distinguishability"
+
+[tool.uv.sources]
+mmdfuse = { git = "https://github.com/antoninschrab/mmdfuse.git" }
+
+[tool.uv]
+# value-nlp pins spacy==3.7.4, whose thinc wheels are built against numpy 1.x
+# and crash under this project's numpy 2.x ("numpy.dtype size changed").
+# spacy 3.8 is the numpy-2-compatible line; Multi-VALUE works unchanged on it.
+override-dependencies = ["spacy>=3.8,<3.9"]
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.156.1",
+    "pytest>=9.1.1",
+    "ruff>=0.6",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+extend-exclude = ["build", ".venv", "venv", "dist", "runs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "C4", "SIM", "RUF"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+markers = ["slow: tests that load a real model (deselect with -m 'not slow')"]

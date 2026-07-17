@@ -1,0 +1,263 @@
+{
+ "google/gemma-2-2b-it": {
+  "twitteraae": {
+   "acc": 0.8625,
+   "null_mean": 0.4938,
+   "p_value": 0.0909
+  },
+  "reddit_l2": {
+   "acc": 0.7656,
+   "null_mean": 0.4958,
+   "p_value": 0.0909
+  },
+  "pan17_variety": {
+   "acc": 0.775,
+   "null_mean": 0.4945,
+   "p_value": 0.0909
+  },
+  "blog_authorship": {
+   "acc": 0.577,
+   "null_mean": 0.4925,
+   "p_value": 0.0909
+  },
+  "null_control": {
+   "acc": 0.5,
+   "null_mean": 0.475,
+   "p_value": 0.5455
+  },
+  "prism": {
+   "acc": 0.5617,
+   "null_mean": 0.5318,
+   "p_value": 0.0909
+  },
+  "thoughttrace": {
+   "acc": 0.5737,
+   "null_mean": 0.4973,
+   "p_value": 0.0909
+  },
+  "wildchat": {
+   "acc": 0.5733,
+   "null_mean": 0.4831,
+   "p_value": 0.0909
+  }
+ },
+ "google/gemma-2-9b-it": {
+  "twitteraae": {
+   "acc": 0.8375,
+   "null_mean": 0.4775,
+   "p_value": 0.0909
+  },
+  "reddit_l2": {
+   "acc": 0.7812,
+   "null_mean": 0.4978,
+   "p_value": 0.0909
+  },
+  "pan17_variety": {
+   "acc": 0.8234,
+   "null_mean": 0.4991,
+   "p_value": 0.0909
+  },
+  "blog_authorship": {
+   "acc": 0.6016,
+   "null_mean": 0.503,
+   "p_value": 0.0909
+  },
+  "null_control": {
+   "acc": 0.5375,
+   "null_mean": 0.4888,
+   "p_value": 0.4545
+  },
+  "prism": {
+   "acc": 0.5779,
+   "null_mean": 0.5097,
+   "p_value": 0.0909
+  },
+  "thoughttrace": {
+   "acc": 0.5617,
+   "null_mean": 0.5038,
+   "p_value": 0.0909
+  },
+  "wildchat": {
+   "acc": 0.5635,
+   "null_mean": 0.4743,
+   "p_value": 0.0909
+  }
+ },
+ "Qwen/Qwen2.5-14B-Instruct": {
+  "twitteraae": {
+   "acc": 0.8438,
+   "null_mean": 0.4962,
+   "p_value": 0.0909
+  },
+  "reddit_l2": {
+   "acc": 0.8047,
+   "null_mean": 0.4872,
+   "p_value": 0.0909
+  },
+  "pan17_variety": {
+   "acc": 0.7922,
+   "null_mean": 0.4902,
+   "p_value": 0.0909
+  },
+  "blog_authorship": {
+   "acc": 0.6066,
+   "null_mean": 0.4918,
+   "p_value": 0.0909
+  },
+  "null_control": {
+   "acc": 0.5125,
+   "null_mean": 0.5012,
+   "p_value": 0.6364
+  },
+  "prism": {
+   "acc": 0.5844,
+   "null_mean": 0.5006,
+   "p_value": 0.0909
+  },
+  "thoughttrace": {
+   "acc": 0.571,
+   "null_mean": 0.5029,
+   "p_value": 0.0909
+  },
+  "wildchat": {
+   "acc": 0.5765,
+   "null_mean": 0.4857,
+   "p_value": 0.0909
+  }
+ },
+ "Qwen/Qwen2.5-32B-Instruct": {
+  "n_layers": 64,
+  "layer": 48,
+  "params_b": 32.763876352,
+  "twitteraae": {
+   "acc": 0.8375,
+   "null_mean": 0.49,
+   "p_value": 0.0909
+  },
+  "reddit_l2": {
+   "acc": 0.8094,
+   "null_mean": 0.4919,
+   "p_value": 0.0909
+  },
+  "pan17_variety": {
+   "acc": 0.7875,
+   "null_mean": 0.4977,
+   "p_value": 0.0909
+  },
+  "blog_authorship": {
+   "acc": 0.5934,
+   "null_mean": 0.4936,
+   "p_value": 0.0909
+  },
+  "null_control": {
+   "acc": 0.525,
+   "null_mean": 0.4888,
+   "p_value": 0.4545
+  },
+  "prism": {
+   "acc": 0.5455,
+   "null_mean": 0.5055,
+   "p_value": 0.2727
+  },
+  "thoughttrace": {
+   "acc": 0.5375,
+   "null_mean": 0.5079,
+   "p_value": 0.1818
+  },
+  "wildchat": {
+   "acc": 0.5896,
+   "null_mean": 0.4863,
+   "p_value": 0.0909
+  }
+ },
+ "google/gemma-2-27b-it": {
+  "n_layers": 46,
+  "layer": 34,
+  "params_b": 27.22712832,
+  "twitteraae": {
+   "acc": 0.875,
+   "null_mean": 0.4819,
+   "p_value": 0.0909
+  },
+  "reddit_l2": {
+   "acc": 0.7922,
+   "null_mean": 0.5012,
+   "p_value": 0.0909
+  },
+  "pan17_variety": {
+   "acc": 0.8234,
+   "null_mean": 0.4953,
+   "p_value": 0.0909
+  },
+  "blog_authorship": {
+   "acc": 0.6148,
+   "null_mean": 0.4892,
+   "p_value": 0.0909
+  },
+  "null_control": {
+   "acc": 0.5625,
+   "null_mean": 0.515,
+   "p_value": 0.4545
+  },
+  "prism": {
+   "acc": 0.5812,
+   "null_mean": 0.5208,
+   "p_value": 0.0909
+  },
+  "thoughttrace": {
+   "acc": 0.571,
+   "null_mean": 0.4972,
+   "p_value": 0.0909
+  },
+  "wildchat": {
+   "acc": 0.5831,
+   "null_mean": 0.4814,
+   "p_value": 0.0909
+  }
+ },
+ "Qwen/Qwen2.5-72B-Instruct": {
+  "n_layers": 80,
+  "layer": 60,
+  "params_b": 72.706203648,
+  "twitteraae": {
+   "acc": 0.8875,
+   "null_mean": 0.4862,
+   "p_value": 0.0909
+  },
+  "reddit_l2": {
+   "acc": 0.8406,
+   "null_mean": 0.4894,
+   "p_value": 0.0909
+  },
+  "pan17_variety": {
+   "acc": 0.7922,
+   "null_mean": 0.4989,
+   "p_value": 0.0909
+  },
+  "blog_authorship": {
+   "acc": 0.6098,
+   "null_mean": 0.5002,
+   "p_value": 0.0909
+  },
+  "prism": {
+   "acc": 0.5844,
+   "null_mean": 0.4951,
+   "p_value": 0.0909
+  },
+  "thoughttrace": {
+   "acc": 0.5576,
+   "null_mean": 0.5066,
+   "p_value": 0.0909
+  },
+  "wildchat": {
+   "acc": 0.5668,
+   "null_mean": 0.4847,
+   "p_value": 0.0909
+  },
+  "null_control": {
+   "acc": 0.4625,
+   "null_mean": 0.5062,
+   "p_value": 0.6364
+  }
+ }
+}

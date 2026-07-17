@@ -76,7 +76,10 @@ def run_overview(paths: RunDirectoryPaths) -> dict:
 
 
 def stage1_data(paths: RunDirectoryPaths) -> dict:
-    return load_json(paths.prompt_sets_path)
+    data = load_json(paths.prompt_sets_path)
+    if paths.input_distinguishability_path.exists():
+        data["input_distinguishability"] = load_json(paths.input_distinguishability_path)
+    return data
 
 
 def stage2_data(paths: RunDirectoryPaths) -> dict:
@@ -137,11 +140,17 @@ def stage4_data(paths: RunDirectoryPaths, limit: int, offset: int) -> dict:
             ]
             row[axis_id] = sum(verdicts) / len(verdicts) if verdicts else None
         heatmap.append(row)
+    calibration = (
+        load_json(paths.judge_calibration_path)
+        if paths.judge_calibration_path.exists()
+        else None
+    )
     return {
         "manifest": manifest,
         "axis_ids": axis_ids,
         "per_axis_rates": per_axis_rates,
         "heatmap": heatmap,
+        "calibration": calibration,
         "total": len(records),
         "records": records[offset : offset + limit],
     }

@@ -5,6 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from dtreat.common.base_schema import BaseSchema
+from dtreat.stages.prompt_distinguishability.distinguish_report_schemas import (
+    InputOutputComparison,
+)
 
 
 @dataclass
@@ -74,6 +77,7 @@ class AnalysisReport(BaseSchema):
     c2st: ClassifierTwoSampleResult | None = None
     refusals: RefusalAnalysis | None = None
     prompt_rates: list[PromptBehaviorRates] = field(default_factory=list)
+    input_output: InputOutputComparison | None = None
     n_permutations: int = 0
     permutation_unit: str = "prompt"
     fdr_alpha: float = 0.05

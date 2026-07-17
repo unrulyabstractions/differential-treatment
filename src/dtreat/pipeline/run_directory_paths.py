@@ -56,6 +56,10 @@ class RunDirectoryPaths:
     def prompt_sets_path(self) -> Path:
         return self.run_dir / "stage1_prompts" / "prompt_sets.json"
 
+    @property
+    def input_distinguishability_path(self) -> Path:
+        return self.run_dir / "stage1_prompts" / "input_distinguishability.json"
+
     # ── stage 2: hypothesis generation ───────────────────────────────────
 
     @property
@@ -81,6 +85,10 @@ class RunDirectoryPaths:
     @property
     def scoring_manifest_path(self) -> Path:
         return self.run_dir / "stage4_scores" / "scoring_manifest.json"
+
+    @property
+    def judge_calibration_path(self) -> Path:
+        return self.run_dir / "stage4_scores" / "judge_calibration.json"
 
     # ── stage 5: analysis ────────────────────────────────────────────────
 

@@ -10,11 +10,15 @@ from dtreat.common.base_schema import BaseSchema
 @dataclass
 class HypothesisAxis(BaseSchema):
     """One interpretable axis: a yes/no question askable of any response
-    (the Lambda_j dimensions of the behavior characterization, §3.2)."""
+    (the Lambda_j dimensions of the behavior characterization, §3.2).
+
+    The rubric sharpens judging: what counts as YES, what does not, edge
+    cases. Judges see it; it never mentions communities."""
 
     axis_id: str
     question: str
     rationale: str = ""
+    rubric: str = ""
     source: str = "helper"  # "helper" | "seed"
 
 
@@ -33,3 +37,7 @@ class HypothesisSet(BaseSchema):
 
     def axis_ids(self) -> list[str]:
         return [axis.axis_id for axis in self.axes]
+
+    def axis_rubrics(self) -> dict[str, str]:
+        """axis_id -> rubric, only for axes that have one."""
+        return {axis.axis_id: axis.rubric for axis in self.axes if axis.rubric.strip()}

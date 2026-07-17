@@ -16,6 +16,10 @@ from dtreat.diagnostics.cost_estimation import print_cost_estimate
 from dtreat.diagnostics.llm_trace_reporting import print_trace_report
 from dtreat.diagnostics.run_validation import print_run_status, validate_run
 from dtreat.server.debug_server_app import serve_debug_ui
+from dtreat.stages.prompt_distinguishability.distinguish_bridge_stage import (
+    run_prompt_distinguishability,
+)
+from dtreat.stages.response_scoring.judge_calibration_stage import run_judge_calibration
 
 from .experiment_config import ExperimentConfig
 from .run_directory_paths import RunDirectoryPaths
@@ -88,6 +92,26 @@ def _build_parser() -> argparse.ArgumentParser:
         handler=lambda args: print_cost_estimate(_config_from_args(args))
     )
 
+    calibrate = subparsers.add_parser(
+        "calibrate-judge", help="judge-panel agreement, consistency, gold accuracy"
+    )
+    _add_config_arguments(calibrate)
+    calibrate.add_argument(
+        "--consistency-sample", type=int, default=20,
+        help="responses to re-judge for self-consistency (0 disables)",
+    )
+    calibrate.add_argument(
+        "--gold", default=None,
+        help="gold labels JSON: {response_id: {axis_id: true/false}}",
+    )
+    calibrate.set_defaults(handler=_calibrate_judge)
+
+    distinguish = subparsers.add_parser(
+        "distinguish", help="input-side prompt distinguishability (distinguish/ bridge)"
+    )
+    _add_config_arguments(distinguish)
+    distinguish.set_defaults(handler=_run_distinguish)
+
     serve = subparsers.add_parser("serve", help="debug/visualization server + UI")
     serve.add_argument("--runs-root", default="out/runs", help="directory containing runs")
     serve.add_argument("--port", type=int, default=8321)
@@ -145,6 +169,22 @@ def _run_all_stages(args) -> int:
     log("\nPipeline complete.")
     log(f"  report:  {paths.analysis_report_path}")
     log(f"  summary: {paths.analysis_summary_path}")
+    return 0
+
+
+def _calibrate_judge(args) -> int:
+    config, paths = _resolve(args)
+    run_judge_calibration(
+        config, paths,
+        consistency_sample=args.consistency_sample,
+        gold_labels_file=args.gold,
+    )
+    return 0
+
+
+def _run_distinguish(args) -> int:
+    config, paths = _resolve(args)
+    run_prompt_distinguishability(config, paths)
     return 0
 
 

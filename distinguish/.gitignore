@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+
+# Pipeline outputs
+runs/
+
+# Cloud quarantine + instance state
+sync/
+cloud/.vast_instance_id
+
+# Session-local verification notes
+VERIFICATION_LOG.md
+
+# Tooling caches
+.ruff_cache/
+.pytest_cache/
+
+# OS
+.DS_Store
+
+# Local backups
+.backups/

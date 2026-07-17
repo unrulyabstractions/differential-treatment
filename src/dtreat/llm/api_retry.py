@@ -16,11 +16,13 @@ from dtreat.common.console_logging import log
 RETRYABLE_MARKERS = (
     "rate limit",
     "rate_limit",
+    "too many requests",
     "overloaded",
     "timeout",
     "timed out",
     "connection",
     "temporarily",
+    "429",
     "503",
     "529",
     "500",
