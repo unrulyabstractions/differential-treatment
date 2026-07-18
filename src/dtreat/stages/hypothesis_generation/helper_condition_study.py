@@ -236,6 +236,10 @@ def _run_condition(
     if name == "grounded":
         literature = _grounding_block(artifact)
 
+    instruction_types = sorted(
+        {prompt.instruction_id for prompt in artifact.target_set.prompts}
+        | {prompt.instruction_id for prompt in artifact.baseline_set.prompts}
+    )
     system_prompt, user_prompt = build_helper_messages(
         deployment_context=config.deployment_context,
         target_community=config.target_community.name,
@@ -243,6 +247,7 @@ def _run_condition(
         max_axes=config.max_axes,
         seed_hypotheses=seed_hypotheses,
         literature_notes=literature,
+        instruction_types=instruction_types,
     )
     result = client.complete(
         client.build_request(
