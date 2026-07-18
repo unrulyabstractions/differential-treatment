@@ -16,11 +16,9 @@ from dtreat.common.judge_protocol import (
 )
 from dtreat.llm.chat_client import ChatClient
 from dtreat.llm.chat_types import ChatMessage
+from dtreat.stages.hypothesis_generation.axis_parsing import parse_helper_axes
 from dtreat.stages.hypothesis_generation.helper_prompt_builder import (
     build_helper_messages,
-)
-from dtreat.stages.hypothesis_generation.hypothesis_generation_stage import (
-    parse_helper_axes,
 )
 
 pytestmark = pytest.mark.live

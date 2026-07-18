@@ -67,6 +67,21 @@ def render_analysis_summary(report: AnalysisReport) -> str:
             "",
             io.interpretation,
         ]
+    if report.method_breakdown:
+        lines += [
+            "",
+            "## Per hypothesis-generation method",
+            "",
+            "| method | axes | significant | total I (bits) | mean |Δ| |",
+            "|--------|-----:|------------:|---------------:|---------:|",
+        ]
+        for method in sorted(
+            report.method_breakdown, key=lambda m: -m.total_info_bits
+        ):
+            lines.append(
+                f"| {method.method} | {method.n_axes} | {method.n_significant} "
+                f"| {method.total_info_bits:.3f} | {method.mean_abs_delta:.3f} |"
+            )
     if report.instruction_strata:
         lines += [
             "",

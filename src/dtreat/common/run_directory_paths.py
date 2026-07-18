@@ -101,28 +101,6 @@ class RunDirectoryPaths:
     def judge_calibration_path(self) -> Path:
         return self.run_dir / "stage4_scores" / "judge_calibration.json"
 
-    # ── stage 6 (optional): counterfactual voice-swap ────────────────────
-
-    @property
-    def twins_path(self) -> Path:
-        return self.run_dir / "stage6_counterfactual" / "twins.jsonl"
-
-    @property
-    def twin_responses_path(self) -> Path:
-        return self.run_dir / "stage6_counterfactual" / "twin_responses.jsonl"
-
-    @property
-    def twin_scored_path(self) -> Path:
-        return self.run_dir / "stage6_counterfactual" / "twin_scored.jsonl"
-
-    @property
-    def counterfactual_report_path(self) -> Path:
-        return self.run_dir / "stage6_counterfactual" / "counterfactual_report.json"
-
-    @property
-    def method_comparison_path(self) -> Path:
-        return self.run_dir / "stage6_counterfactual" / "method_comparison.md"
-
     # ── stage 5: analysis ────────────────────────────────────────────────
 
     @property

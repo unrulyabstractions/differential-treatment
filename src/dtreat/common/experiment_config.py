@@ -51,7 +51,10 @@ class ExperimentConfig(BaseSchema):
     # many instruction groups (coarse groups make matching possible)
     max_instruction_groups: int = 8
 
-    # Stage 2 — hypothesis generation
+    # Stage 2 — hypothesis generation: ALL applicable methods run by default
+    # and the union is scored; axes track which method(s) proposed them.
+    # Set a subset (e.g. ["zero_context"]) to restrict.
+    hypothesis_conditions: list[str] = field(default_factory=list)
     max_axes: int = 8
     seed_hypotheses: list[str] = field(default_factory=list)
     literature_notes: str = ""
@@ -68,9 +71,6 @@ class ExperimentConfig(BaseSchema):
     # panel: extra judge models scored simultaneously alongside judge_model
     judge_models: list[str] = field(default_factory=list)
     judge_aggregation: str = "majority"  # "majority" | "unanimous" | "any"
-
-    # Stage 6 (optional) — counterfactual voice-swap
-    rewriter_model: str = "mock:rewriter"
 
     # Stage 5 — analysis
     epsilon: float = 0.01

@@ -7,7 +7,6 @@ Model spec syntax (the whole spec travels in ChatRequest.model):
     mock:judge            — marker-matching judge (near-perfect)
     mock:judge:noisy      — judge with seeded 5% verdict flips
     mock:annotator        — keyword instruction extraction + canonicalization
-    mock:rewriter         — cue-vocabulary swap (counterfactual twins)
 
 All randomness is derived from (model spec, prompt text, request seed), so any
 call is reproducible in isolation regardless of execution order.
@@ -24,10 +23,8 @@ from dtreat.common.random_seed import rng_for
 from .chat_backend_base import ChatBackend
 from .chat_types import ChatRequest, ChatResult, ChatUsage
 from .mock_behavior_profiles import (
-    BASELINE_CUE_WORDS,
     MOCK_AXES,
     MOCK_TARGET_PROFILES,
-    TARGET_CUE_WORDS,
     detect_cued_community,
 )
 
@@ -54,8 +51,6 @@ class MockChatBackend(ChatBackend):
             text = self._judge_reply(request, user_text, variant)
         elif role == "annotator":
             text = self._annotator_reply(user_text)
-        elif role == "rewriter":
-            text = self._rewriter_reply(user_text)
         else:
             raise ValueError(f"Unknown mock role: {role}")
 
@@ -150,31 +145,6 @@ class MockChatBackend(ChatBackend):
             if any(keyword in lowered for keyword in keywords):
                 return phrase
         return "ask general fitness advice"
-
-
-    # ── rewriter ─────────────────────────────────────────────────────────
-
-    def _rewriter_reply(self, user_text: str) -> str:
-        """Twin generation: swap cue vocabularies so cue detection flips.
-        Validation calls always pass (mock twins preserve content by
-        construction)."""
-        if "Answer with ONLY YES or NO" in user_text and "Message A" in user_text:
-            return "YES"
-        original = _extract_between(user_text, RESPONSE_START, RESPONSE_END)
-        rewritten = original
-        for index, cue in enumerate(TARGET_CUE_WORDS):
-            rewritten = rewritten.replace(
-                cue, f"§T{index}§"
-            )
-        for index, cue in enumerate(BASELINE_CUE_WORDS):
-            rewritten = rewritten.replace(
-                cue, TARGET_CUE_WORDS[index % len(TARGET_CUE_WORDS)]
-            )
-        for index in range(len(TARGET_CUE_WORDS)):
-            rewritten = rewritten.replace(
-                f"§T{index}§", BASELINE_CUE_WORDS[index % len(BASELINE_CUE_WORDS)]
-            )
-        return rewritten
 
 
 def _extract_between(text: str, start: str, end: str) -> str:

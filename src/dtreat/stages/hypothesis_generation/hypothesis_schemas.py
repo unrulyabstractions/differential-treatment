@@ -19,7 +19,8 @@ class HypothesisAxis(BaseSchema):
     question: str
     rationale: str = ""
     rubric: str = ""
-    source: str = "helper"  # "helper" | "seed"
+    source: str = "helper"  # primary generation method (first proposer)
+    sources: list[str] = field(default_factory=list)  # ALL methods that proposed it
 
 
 @dataclass

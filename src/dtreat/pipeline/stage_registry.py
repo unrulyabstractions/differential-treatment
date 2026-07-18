@@ -43,16 +43,16 @@ PIPELINE_STAGES: list[StageDefinition] = [
         runner=run_prompt_collection,
     ),
     StageDefinition(
-        name="hypotheses",
-        title="Hypothesis generation (helper LLM)",
-        paper_section="§4.2",
-        runner=run_hypothesis_generation,
-    ),
-    StageDefinition(
         name="responses",
         title="Response collection (target LLM)",
         paper_section="§4.3",
         runner=run_response_collection,
+    ),
+    StageDefinition(
+        name="hypotheses",
+        title="Hypothesis generation (all methods, union)",
+        paper_section="§4.2",
+        runner=run_hypothesis_generation,
     ),
     StageDefinition(
         name="score",

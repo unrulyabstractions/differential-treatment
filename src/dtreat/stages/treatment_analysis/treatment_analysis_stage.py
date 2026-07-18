@@ -34,6 +34,7 @@ from .analysis_report_schemas import (
     AnalysisReport,
     AxisResult,
     InstructionStratumGap,
+    MethodBreakdown,
     PromptBehaviorRates,
     RefusalAnalysis,
 )
@@ -93,6 +94,7 @@ def run_treatment_analysis(
     )
 
     report.input_output = _input_output_comparison(paths, report)
+    report.method_breakdown = _method_breakdown(hypothesis_set, axes)
     _join_judge_reliability(paths, report)
     save_json(report.to_dict(), paths.analysis_report_path)
     paths.analysis_summary_path.parent.mkdir(parents=True, exist_ok=True)
@@ -234,6 +236,37 @@ def _refusal_analysis(paths: RunDirectoryPaths, target_name: str) -> RefusalAnal
         baseline_rate=baseline_refused / len(baseline),
         fisher_p_value=float(p_value),
     )
+
+
+def _method_breakdown(hypothesis_set, axes: list[AxisResult]) -> list[MethodBreakdown]:
+    """Per generation-method downstream stats; an axis proposed by several
+    methods counts for each of them (multi-source provenance)."""
+    by_id = {axis.axis_id: axis for axis in axes}
+    methods: dict[str, list[AxisResult]] = {}
+    for hypothesis in hypothesis_set.axes:
+        result = by_id.get(hypothesis.axis_id)
+        if result is None:
+            continue
+        for method in hypothesis.sources or [hypothesis.source]:
+            methods.setdefault(method, []).append(result)
+    breakdown = []
+    for method, results in sorted(methods.items()):
+        significant = [r.axis_id for r in results if r.significant]
+        breakdown.append(
+            MethodBreakdown(
+                method=method,
+                n_axes=len(results),
+                n_significant=len(significant),
+                total_info_bits=round(sum(r.info_bits for r in results), 4),
+                mean_abs_delta=round(
+                    sum(abs(r.delta) for r in results) / len(results), 4
+                )
+                if results
+                else 0.0,
+                significant_axes=significant,
+            )
+        )
+    return breakdown
 
 
 LOW_AGREEMENT_KAPPA = 0.4  # below "moderate" — verdicts on this axis are noisy

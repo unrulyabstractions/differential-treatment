@@ -20,7 +20,7 @@ from dtreat.common.judge_protocol import (
 )
 from dtreat.llm.chat_client import ChatClient
 from dtreat.llm.chat_types import ChatMessage
-from dtreat.stages.hypothesis_generation.hypothesis_generation_stage import (
+from dtreat.stages.hypothesis_generation.axis_parsing import (
     dedupe_axes,
     parse_helper_axes,
 )

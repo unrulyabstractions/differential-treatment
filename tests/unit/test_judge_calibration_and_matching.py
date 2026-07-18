@@ -4,9 +4,7 @@ and helper-axis rubric plumbing."""
 import numpy as np
 import pytest
 
-from dtreat.stages.hypothesis_generation.hypothesis_generation_stage import (
-    parse_helper_axes,
-)
+from dtreat.stages.hypothesis_generation.axis_parsing import parse_helper_axes
 from dtreat.stages.prompt_collection.instruction_frequency_matching import (
     match_instruction_frequencies,
 )

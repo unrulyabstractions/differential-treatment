@@ -35,6 +35,18 @@ class AxisResult(BaseSchema):
 
 
 @dataclass
+class MethodBreakdown(BaseSchema):
+    """How one hypothesis-generation method's axes fared downstream."""
+
+    method: str
+    n_axes: int
+    n_significant: int
+    total_info_bits: float
+    mean_abs_delta: float
+    significant_axes: list[str] = field(default_factory=list)
+
+
+@dataclass
 class InstructionStratumGap(BaseSchema):
     """One axis's gap WITHIN one instruction stratum (2410.19803: bias
     concentrates in specific tasks and dilutes in the aggregate)."""
@@ -97,6 +109,7 @@ class AnalysisReport(BaseSchema):
     prompt_rates: list[PromptBehaviorRates] = field(default_factory=list)
     # largest within-stratum gaps for significant axes (top strata by |delta|)
     instruction_strata: list[InstructionStratumGap] = field(default_factory=list)
+    method_breakdown: list[MethodBreakdown] = field(default_factory=list)
     input_output: InputOutputComparison | None = None
     n_permutations: int = 0
     permutation_unit: str = "prompt"
