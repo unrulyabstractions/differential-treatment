@@ -163,6 +163,28 @@ independently recomputed from raw artifacts.
   complete-case C2ST loses most rows under a 24-axis panel with ties (158/216
   dropped) — per-axis stats carry the evidence there.
 
+### Cross-group comparison (same domain, same target model)
+
+The pipeline is group-agnostic (`data/group_pairs/` specs + one config per
+pair; `dtreat compare-runs` for the side-by-side). Three pairs in the same
+fitness-advice deployment, gpt-4o-mini as target, ~40 matched prompts/side:
+
+| pair | input C2ST | output significant axes | behavior C2ST |
+|------|-----------:|------------------------:|--------------:|
+| lgbtq vs cishet | 0.889 | **21/24** | 0.722 |
+| women vs men | 0.738 | 0/8, and 0/32 after a 4-strategy union | **0.700** [0.55, 0.82] on 8 axes — separable |
+| over40 vs young | 0.613 | 0/8 | 0.542 — chance |
+
+Reading: the model's differential behavior tracks the *kind* of group, not
+just input legibility. LGBTQ+ voice triggers heavy explicit adaptation
+(21 significant axes). Gender-coded voice produces behavior that IS
+separable (8-axis C2ST above chance) but no single axis reaches
+significance even after widening to 32 axes from four helper strategies —
+weak, diffuse differentiation spread across many small effects (best
+candidates: less recovery emphasis Δ=−0.18, more strength-training push
++0.16, all q≈0.43): the Λ* discovery gap made concrete. Age-coded voice
+produces essentially no behavioral difference at this scale.
+
 ## Notes
 
 - The case-study prompts and communities are **fictional and invented** for

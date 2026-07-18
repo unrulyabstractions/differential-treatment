@@ -44,14 +44,28 @@ def run_response_scoring(
     axis_ids = hypothesis_set.axis_ids()
     judge_models = config.judge_panel()
 
-    # Records with no verdicts at all mean every judge call failed or was
-    # unparseable — treat them as not-yet-scored so a transient failure never
-    # permanently removes a response from the audit.
-    existing = {
-        record["response_id"]: ScoredResponse.from_dict(record)
-        for record in load_jsonl(paths.scored_responses_path, default=[])
-        if record.get("verdicts") or any(record.get("verdicts_by_judge", {}).values())
-    }
+    # A stored record is reusable only if it COVERS the current axis set:
+    # every current axis appears in its verdicts or its unparsed list (a tie
+    # is a judgment; total absence is not). This makes resumability robust to
+    # hypothesis-set changes (helper-study unions) and to failed judge calls —
+    # uncovered records are simply re-judged.
+    current_axes = set(axis_ids)
+    existing = {}
+    stale_records = 0
+    for record in load_jsonl(paths.scored_responses_path, default=[]):
+        covered = set(record.get("verdicts", {})) | set(record.get("unparsed_axes", []))
+        judged_at_all = record.get("verdicts") or any(
+            record.get("verdicts_by_judge", {}).values()
+        )
+        if judged_at_all and current_axes <= covered:
+            existing[record["response_id"]] = ScoredResponse.from_dict(record)
+        else:
+            stale_records += 1
+    if stale_records:
+        log(
+            f"  {stale_records} stored records do not cover the current axis set — "
+            "re-judging them"
+        )
 
     # Refused/empty responses are not judged: they carry no behavior to score.
     # They stay visible via the refusal counts in stage 5.

@@ -6,7 +6,9 @@ debug server (`dtreat serve`).
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
+import time
 from pathlib import Path
 
 from dtreat.common.console_logging import log, log_stage
@@ -245,6 +247,7 @@ def _helper_study(args) -> int:
     conditions = args.conditions or STANDARD_CONDITIONS
     if not paths.prompt_sets_path.exists():
         run_prompt_collection(config, paths)
+    _archive_replaced_artifacts(paths)
     report, union = run_helper_conditions(config, paths, conditions)
     run_response_collection(config, paths)
     run_response_scoring(config, paths)
@@ -259,6 +262,26 @@ def _helper_study(args) -> int:
         )
     log(f"  full report: {paths.helper_study_path}")
     return 0
+
+
+def _archive_replaced_artifacts(paths: RunDirectoryPaths) -> None:
+    """helper-study replaces the hypothesis set and downstream artifacts;
+    snapshot what exists first so prior results are never silently destroyed."""
+    to_archive = [
+        paths.hypothesis_set_path,
+        paths.scored_responses_path,
+        paths.scoring_manifest_path,
+        paths.analysis_report_path,
+        paths.analysis_summary_path,
+    ]
+    existing = [p for p in to_archive if p.exists()]
+    if not existing:
+        return
+    archive_dir = paths.run_dir / "archive" / time.strftime("%Y%m%d_%H%M%S")
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    for path in existing:
+        shutil.copy2(path, archive_dir / path.name)
+    log(f"  archived {len(existing)} prior artifacts to {archive_dir}")
 
 
 def _judge_study(args) -> int:

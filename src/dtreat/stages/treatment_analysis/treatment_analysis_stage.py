@@ -265,8 +265,19 @@ def _input_output_comparison(
         return None
     input_acc = input_report.best_c2st_accuracy
     output_acc = report.c2st.accuracy if report.c2st else None
+    # signal usage is only meaningful when the output side carries real
+    # evidence (significant axes or above-chance C2ST); otherwise a noisy
+    # C2ST point estimate can produce absurd ratios (>100%)
+    output_evidence = bool(report.c2st and report.c2st.above_chance) or bool(
+        report.significant_axes()
+    )
     signal_usage = None
-    if input_acc is not None and output_acc is not None and input_acc > 0.5:
+    if (
+        output_evidence
+        and input_acc is not None
+        and output_acc is not None
+        and input_acc > 0.5
+    ):
         signal_usage = max(0.0, (output_acc - 0.5) / (input_acc - 0.5))
     comparison = InputOutputComparison(
         input_c2st_accuracy=input_acc,
@@ -277,9 +288,6 @@ def _input_output_comparison(
         output_total_axes=len(report.axes),
         output_d_pi_bits=report.d_pi_bits_significant_axes,
         signal_usage=signal_usage,
-    )
-    output_evidence = bool(report.c2st and report.c2st.above_chance) or bool(
-        report.significant_axes()
     )
     comparison.interpretation = _interpret_input_output(comparison, output_evidence)
     return comparison
