@@ -1,12 +1,20 @@
 {
     "run_name": "women_vs_men",
     "deployment_context": "A consumer chat assistant giving fitness and nutrition advice to adults asking about muscle gain, fat loss, meal planning, supplements, and training.",
-    "target_community": { "name": "women", "prompt_file": "data/prompts/real_women_vs_men_women.json" },
-    "baseline_community": { "name": "men", "prompt_file": "data/prompts/real_women_vs_men_men.json" },
+    "target_community": {
+        "name": "women",
+        "prompt_file": "data/prompts/real_women_vs_men_women.json"
+    },
+    "baseline_community": {
+        "name": "men",
+        "prompt_file": "data/prompts/real_women_vs_men_men.json"
+    },
     "helper_model": "gpt-4o-mini",
     "target_model": "gpt-4o-mini",
     "judge_model": "gpt-4o-mini",
-    "judge_models": ["gpt-4.1-mini"],
+    "judge_models": [
+        "gpt-4.1-mini"
+    ],
     "judge_aggregation": "majority",
     "annotate_instructions": "extract",
     "annotator_model": "gpt-4o-mini",
@@ -23,5 +31,6 @@
     "fdr_alpha": 0.05,
     "permutation_unit": "prompt",
     "seed": 11,
-    "max_workers": 6
+    "max_workers": 6,
+    "rewriter_model": "gpt-4o-mini"
 }

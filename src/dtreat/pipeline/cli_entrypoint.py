@@ -21,6 +21,12 @@ from dtreat.diagnostics.cross_run_comparison import run_cross_run_comparison
 from dtreat.diagnostics.llm_trace_reporting import print_trace_report
 from dtreat.diagnostics.run_validation import print_run_status, validate_run
 from dtreat.server.debug_server_app import serve_debug_ui
+from dtreat.stages.counterfactual_treatment.counterfactual_stage import (
+    run_counterfactual,
+)
+from dtreat.stages.counterfactual_treatment.method_comparison import (
+    write_method_comparison,
+)
 from dtreat.stages.hypothesis_generation.helper_condition_study import (
     STANDARD_CONDITIONS,
     run_helper_conditions,
@@ -149,6 +155,20 @@ def _build_parser() -> argparse.ArgumentParser:
         help="judge model specs to compare (e.g. gpt-4o-mini claude-haiku-4-5 gemini-3.5-flash)",
     )
     judge_study.set_defaults(handler=_judge_study)
+
+    counterfactual = subparsers.add_parser(
+        "counterfactual",
+        help="voice-swapped twin analysis: causal voice effect, paired tests (needs stages 1-4)",
+    )
+    _add_config_arguments(counterfactual)
+    counterfactual.set_defaults(handler=_counterfactual)
+
+    methods = subparsers.add_parser(
+        "methods-compare",
+        help="side-by-side per-axis table: naturalistic vs counterfactual vs discovery source",
+    )
+    _add_config_arguments(methods)
+    methods.set_defaults(handler=_methods_compare)
 
     compare_runs = subparsers.add_parser(
         "compare-runs", help="cross-group comparison table over completed runs"
@@ -289,6 +309,19 @@ def _archive_replaced_artifacts(paths: RunDirectoryPaths) -> None:
 def _judge_study(args) -> int:
     config, paths = _resolve(args)
     run_judge_study(config, paths, args.judges)
+    return 0
+
+
+def _counterfactual(args) -> int:
+    config, paths = _resolve(args)
+    run_counterfactual(config, paths)
+    write_method_comparison(paths)
+    return 0
+
+
+def _methods_compare(args) -> int:
+    _config, paths = _resolve(args)
+    write_method_comparison(paths)
     return 0
 
 

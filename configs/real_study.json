@@ -1,12 +1,20 @@
 {
     "run_name": "real_study",
     "deployment_context": "A consumer chat assistant giving fitness and nutrition advice to adults asking about muscle gain, fat loss, meal planning, supplements, and training.",
-    "target_community": { "name": "lgbtq", "prompt_file": "data/prompts/real_reddit_lgbtq.json" },
-    "baseline_community": { "name": "cishet", "prompt_file": "data/prompts/real_reddit_cishet.json" },
+    "target_community": {
+        "name": "lgbtq",
+        "prompt_file": "data/prompts/real_reddit_lgbtq.json"
+    },
+    "baseline_community": {
+        "name": "cishet",
+        "prompt_file": "data/prompts/real_reddit_cishet.json"
+    },
     "helper_model": "gpt-4o-mini",
     "target_model": "gpt-4o-mini",
     "judge_model": "gpt-4o-mini",
-    "judge_models": ["gpt-4.1-mini"],
+    "judge_models": [
+        "gpt-4.1-mini"
+    ],
     "judge_aggregation": "majority",
     "annotate_instructions": "extract",
     "annotator_model": "gpt-4o-mini",
@@ -23,5 +31,6 @@
     "fdr_alpha": 0.05,
     "permutation_unit": "prompt",
     "seed": 11,
-    "max_workers": 6
+    "max_workers": 6,
+    "rewriter_model": "gpt-4o-mini"
 }

@@ -69,6 +69,9 @@ class ExperimentConfig(BaseSchema):
     judge_models: list[str] = field(default_factory=list)
     judge_aggregation: str = "majority"  # "majority" | "unanimous" | "any"
 
+    # Stage 6 (optional) — counterfactual voice-swap
+    rewriter_model: str = "mock:rewriter"
+
     # Stage 5 — analysis
     epsilon: float = 0.01
     n_permutations: int = 1000
