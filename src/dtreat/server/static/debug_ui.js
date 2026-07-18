@@ -363,9 +363,11 @@ const renderers = {
     const data = await api(`/api/runs/${state.run}/stage2`);
     const c = card("Hypothesized axes", `helper model: ${data.helper_model}`);
     c.innerHTML += `<table class="data"><tr><th>axis</th><th>question</th><th>rationale</th><th>source</th></tr>` +
-      data.axes.map(a =>
-        `<tr><td class="mono">${esc(a.axis_id)}</td><td>${esc(a.question)}</td><td>${esc(a.rationale)}</td><td><span class="chip">${esc(a.source)}</span></td></tr>`
-      ).join("") + `</table>`;
+      data.axes.map(a => {
+        const sources = (a.sources && a.sources.length ? a.sources : [a.source])
+          .map(s => `<span class="chip">${esc(s)}</span>`).join(" ");
+        return `<tr><td class="mono">${esc(a.axis_id)}</td><td>${esc(a.question)}</td><td>${esc(a.rationale)}</td><td>${sources}</td></tr>`;
+      }).join("") + `</table>`;
     const raw = card("Raw helper reply");
     raw.innerHTML += `<details><summary>show</summary><pre class="raw">${esc(data.raw_helper_reply)}</pre></details>`;
   },
@@ -509,6 +511,13 @@ const renderers = {
       values: report.axes.map(a => a.info_bits),
     }], { xMax: Math.max(0.25, ...report.axes.map(a => a.info_bits)) });
 
+    if (report.method_breakdown && report.method_breakdown.length) {
+      const methodCard = card("Per hypothesis-generation method",
+        "how each method's axes fared on the shared responses");
+      methodCard.innerHTML += `<table class="data"><tr><th>method</th><th class="num">axes</th><th class="num">significant</th><th class="num">total I (bits)</th><th class="num">mean |Δ|</th></tr>` +
+        [...report.method_breakdown].sort((a, b) => b.total_info_bits - a.total_info_bits).map(m =>
+          `<tr><td>${esc(m.method)}</td><td class="num">${m.n_axes}</td><td class="num">${m.n_significant}</td><td class="num">${m.total_info_bits.toFixed(3)}</td><td class="num">${m.mean_abs_delta.toFixed(3)}</td></tr>`).join("") + `</table>`;
+    }
     const table = card("Full axis table");
     table.innerHTML += `<table class="data">
       <tr><th>axis</th><th>question</th><th class="num">ẑ_t</th><th class="num">ẑ_b</th><th class="num">Δ</th><th class="num">p</th><th class="num">q</th><th>sig</th><th class="num">I bits</th></tr>` +

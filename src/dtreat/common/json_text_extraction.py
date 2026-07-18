@@ -8,6 +8,7 @@ out the first well-formed array/object instead of trusting the whole reply.
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 
@@ -63,16 +64,29 @@ def _scan_balanced(text: str, open_char: str, close_char: str) -> str | None:
     return None
 
 
+def _parse_span(span: str):
+    """Parse a candidate span, repairing the LLM's most common JSON slip —
+    a missing comma between fields/elements. Safe because JSON strings cannot
+    contain raw newlines: a quote, newline, quote sequence is always a value
+    boundary, never string content."""
+    try:
+        return json.loads(span)
+    except json.JSONDecodeError:
+        repaired = re.sub(r'"(\s*\n\s*)(?=["{])', '",\\1', span)
+        repaired = re.sub(r"\}(\s*\n\s*)\{", "},\\1{", repaired)
+        try:
+            return json.loads(repaired)
+        except json.JSONDecodeError:
+            return None
+
+
 def extract_first_json_array(reply: str) -> list[Any] | None:
     """Best-effort parse of the first JSON array in an LLM reply."""
     text = strip_code_fences(strip_thinking_content(reply))
     span = _scan_balanced(text, "[", "]")
     if span is None:
         return None
-    try:
-        parsed = json.loads(span)
-    except json.JSONDecodeError:
-        return None
+    parsed = _parse_span(span)
     return parsed if isinstance(parsed, list) else None
 
 
@@ -82,8 +96,5 @@ def extract_first_json_object(reply: str) -> dict[str, Any] | None:
     span = _scan_balanced(text, "{", "}")
     if span is None:
         return None
-    try:
-        parsed = json.loads(span)
-    except json.JSONDecodeError:
-        return None
+    parsed = _parse_span(span)
     return parsed if isinstance(parsed, dict) else None

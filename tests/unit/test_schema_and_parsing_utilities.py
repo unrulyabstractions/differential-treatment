@@ -87,6 +87,11 @@ class TestJsonExtraction:
         reply = 'prefix {"key": "value with } brace"} suffix'
         assert extract_first_json_object(reply) == {"key": "value with } brace"}
 
+    def test_missing_comma_between_fields_repaired(self):
+        # the LLM slip that silently zeroed a real hypothesis condition
+        reply = '[{"a": "x."\n    "b": "y"},\n {"a": "z"}]'
+        assert extract_first_json_array(reply) == [{"a": "x.", "b": "y"}, {"a": "z"}]
+
     def test_garbage_returns_none(self):
         assert extract_first_json_array("no json here") is None
         assert extract_first_json_object("{truncated") is None

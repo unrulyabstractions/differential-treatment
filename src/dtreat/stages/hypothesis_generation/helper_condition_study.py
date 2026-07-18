@@ -201,6 +201,11 @@ def run_helper_conditions(
             paths.helper_condition_path(name),
         )
         log(f"  [{name}] {len(axes)} axes" + (f" (skipped: {skipped})" if skipped else ""))
+        if not axes and not skipped:
+            log(
+                f"  [warn] {name} parsed 0 axes from a completed helper call — "
+                f"inspect the raw reply via the llm cache or {paths.llm_trace_path}"
+            )
 
     report.overlaps = _condition_overlaps(report.conditions)
     union = _union_hypothesis_set(config, report.conditions)

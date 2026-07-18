@@ -18,18 +18,18 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from dtreat.common.judge_protocol import (  # noqa: E402
+from dtreat.common.judge_protocol import (
     JUDGE_SYSTEM_PROMPT,
     RESPONSE_END,
     RESPONSE_START,
     format_axis_lines,
     parse_per_response_verdicts,
 )
-from dtreat.common.random_seed import derive_seed  # noqa: E402
-from dtreat.llm.chat_client import ChatClient  # noqa: E402
-from dtreat.llm.chat_types import ChatMessage  # noqa: E402
-from dtreat.llm.mock_behavior_profiles import MOCK_AXES  # noqa: E402
-from dtreat.llm.parallel_chat_execution import ChatJob, execute_chat_jobs  # noqa: E402
+from dtreat.common.random_seed import derive_seed
+from dtreat.llm.chat_client import ChatClient
+from dtreat.llm.chat_types import ChatMessage
+from dtreat.llm.mock_behavior_profiles import MOCK_AXES
+from dtreat.llm.parallel_chat_execution import ChatJob, execute_chat_jobs
 
 DEPLOYMENT = "A consumer chat assistant giving fitness and nutrition advice."
 
