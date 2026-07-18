@@ -42,6 +42,9 @@ Rules:
   without knowing who asked
 - no axes about surface style only (length, greeting) unless plausibly
   community-linked; prefer axes about substance of the advice or action taken
+- axes must be DISTINCT from one another: never propose two near-synonymous
+  questions (one strong phrasing beats three variants); cover different
+  facets of possible treatment
 """
 
 

@@ -23,6 +23,7 @@ over its own axes — so conditions are compared on identical responses.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 from dtreat.common.base_schema import BaseSchema
@@ -383,6 +384,27 @@ def _question_key(axis: HypothesisAxis) -> str:
     return " ".join(axis.question.lower().split())
 
 
+_QUESTION_STOPWORDS = frozenset(
+    ["does", "the", "response", "a", "an", "of", "to", "for", "in", "and", "or", "is", "are", "it", "its", "user"]
+)
+
+
+def _question_tokens(axis: HypothesisAxis) -> frozenset[str]:
+    tokens = re.findall(r"[a-z]+", axis.question.lower())
+    return frozenset(t for t in tokens if t not in _QUESTION_STOPWORDS)
+
+
+def _near_duplicate(axis: HypothesisAxis, existing: HypothesisAxis) -> bool:
+    """Token-Jaccard near-duplicate check: three phrasings of the same axis
+    from different methods must merge, or they inflate the FDR family and
+    cost real statistical power."""
+    tokens_a, tokens_b = _question_tokens(axis), _question_tokens(existing)
+    if not tokens_a or not tokens_b:
+        return False
+    union = tokens_a | tokens_b
+    return len(tokens_a & tokens_b) / len(union) >= 0.6
+
+
 def _condition_overlaps(conditions: list[ConditionAxes]) -> list[ConditionOverlap]:
     overlaps = []
     for i, a in enumerate(conditions):
@@ -425,8 +447,18 @@ def _union_hypothesis_set(
     for condition in conditions:
         for axis in condition.axes:
             key = _question_key(axis)
-            if key in seen_questions:
-                existing = seen_questions[key]
+            fuzzy_match = None
+            if key not in seen_questions:
+                fuzzy_match = next(
+                    (
+                        existing
+                        for existing in union_axes
+                        if _near_duplicate(axis, existing)
+                    ),
+                    None,
+                )
+            if key in seen_questions or fuzzy_match is not None:
+                existing = seen_questions.get(key) or fuzzy_match
                 if condition.condition not in existing.sources:
                     existing.sources.append(condition.condition)
                 continue

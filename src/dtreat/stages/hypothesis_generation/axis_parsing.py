@@ -33,7 +33,9 @@ def parse_helper_axes(reply: str) -> list[HypothesisAxis]:
 
 
 def normalize_axis_id(raw: str) -> str:
-    cleaned = re.sub(r"[^a-z0-9_]", "_", raw.strip().lower())
+    # split camelCase BEFORE lowercasing so "ofRecovery" -> "of_recovery"
+    decamel = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", raw.strip())
+    cleaned = re.sub(r"[^a-z0-9_]", "_", decamel.lower())
     return re.sub(r"_+", "_", cleaned).strip("_")
 
 

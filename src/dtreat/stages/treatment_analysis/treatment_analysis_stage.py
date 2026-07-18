@@ -197,14 +197,24 @@ def _profile_divergence(axes: list[AxisResult], epsilon: float) -> float | None:
 
 
 def _c2st_from_scored(scored, axis_ids, target_name, config):
-    complete = [s for s in scored if all(axis in s.verdicts for axis in axis_ids)]
-    dropped = len(scored) - len(complete)
-    if not complete:
+    """Behavior-vector C2ST. Panel ties are encoded as 0.5 (genuinely
+    ambiguous, midpoint) rather than dropping the row — complete-case
+    deletion discarded most responses once the axis count grew (158/216 at
+    24 axes), starving the test. Rows with NO verdicts at all are dropped."""
+    usable = [s for s in scored if s.verdicts]
+    dropped = len(scored) - len(usable)
+    if not usable:
         return None
     features = np.array(
-        [[1.0 if s.verdicts[axis] else 0.0 for axis in axis_ids] for s in complete]
+        [
+            [
+                (1.0 if s.verdicts[axis] else 0.0) if axis in s.verdicts else 0.5
+                for axis in axis_ids
+            ]
+            for s in usable
+        ]
     )
-    labels = np.array([s.community == target_name for s in complete])
+    labels = np.array([s.community == target_name for s in usable])
     return run_c2st(features, labels, config.c2st_test_fraction, config.seed, dropped)
 
 
