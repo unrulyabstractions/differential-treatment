@@ -109,7 +109,9 @@ function groupedBars(container, categories, series, opts = {}) {
 /* Diverging horizontal bars around zero (the Δ chart). Sign carries which
    community the behavior leans toward; non-significant bars are outlined. */
 function divergingBars(container, items, opts = {}) {
-  const rowH = 26, left = 170, right = 90, width = 720;
+  // widen the label gutter when axis ids run long (large unions)
+  const maxLabel = Math.max(0, ...items.map(d => d.label.length));
+  const rowH = 26, left = Math.min(280, Math.max(170, maxLabel * 7)), right = 90, width = 900;
   const height = items.length * rowH + 30;
   const svg = chartSvg(width, height);
   const maxAbs = Math.max(0.05, ...items.map(d => Math.abs(d.value)));
