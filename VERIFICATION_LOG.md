@@ -387,6 +387,31 @@ RESULT: over40 run VERIFIED; women run VERIFIED across stages with the
 8-axis stage-5 conclusions preserved via the verifier's direct observation
 and the archived comparison; corrected 32-axis artifacts verified by direct
 read; 78 tests + lint green after all fixes.
+
+## 2026-07-18 — Pipeline correction round + full-method women run
+
+WHAT: Removed the counterfactual arm entirely (user correction: implement the
+paper's pipeline ONLY); restored Fig-1 semantics — first as a strict chain,
+then per user clarification as the DAG it is (stages 2∥3 join at 4), with
+responses executed before hypotheses so behavior-grounded generation observes
+real responses. Stage 2 now runs ALL generation methods by default
+(a-priori/zero_context, two_stage, literature bundled, literature_rag with
+live arXiv retrieval, prompt-grounded, response_grounded, seeds) with
+multi-source provenance and a per-method table in every analysis report.
+Helper prompts now include the instruction-type inventory (§4.2 fidelity).
+
+HOW: Mock run-all observed executing 1→3→2→4→5 with response_grounded
+producing axes on a fresh run; RAG retrieval live-tested (top hit for the
+lgbtq/fitness pair: WinoQueer — relevant; earlier naive query returned
+particle physics and was fixed); 78 tests + ruff green. Real women_vs_men
+full-method run READ from artifacts: 48-axis union; per-method table shows
+response_grounded leading (0.177 bits ≈ 2× literature_rag 0.093, ≈3×
+a-priori methods); best candidate axis technical_language (proposed only by
+response_grounded): Δ=−0.17, p=0.0020, q=0.096 under 48-way FDR — the
+strongest women-pair signal to date, still shy of 0.05.
+
+RESULT: VERIFIED (mock E2E + artifacts read directly; live run numbers from
+its own report).
 ## 2026-07-17 — Web research: seed prompts for fitness/nutrition bias-audit dataset
 - WHAT: Verbatim Reddit question prompts (LGBTQ+ vs general/cis-het fitness communities) collected for the report delivered in-chat (not written to a file). Sources: PullPush API (api.pullpush.io) queries over r/FTMFitness, r/askgaybros, r/gaybros, r/MtF, r/butchlesbians, r/actuallesbians, r/beginnerfitness, r/naturalbodybuilding, r/gainit, r/GYM, r/Fitness, r/bodybuilding.
 - HOW: For ~20 quotes used in the report, re-fetched the raw PullPush JSON with curl and printed title/selftext/permalink directly (bypassing WebFetch's summarizer model) and compared strings: FTMFitness (5 posts), askgaybros (5), beginnerfitness (4), MtF (3), butchlesbians (3), gainit (1), naturalbodybuilding (2). All matched verbatim. RESULT: VERIFIED.
