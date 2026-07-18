@@ -41,15 +41,21 @@ and use `configs/live_smoke.json` as a template (`uv run dtreat estimate-cost
 ## Pipeline ↔ paper
 
 ```
-prompts ──▶ hypotheses ──▶ responses ──▶ score ──▶ analyze
- §4.1         §4.2           §4.3         §4.4      §4.5
+              ┌─▶ hypotheses (§4.2) ─┐
+prompts (§4.1)┤                      ├─▶ score (§4.4) ─▶ analyze (§4.5)
+              └─▶ responses  (§4.3) ─┘
 ```
+
+Fig. 1 is a DAG: hypothesis generation and response collection are parallel
+branches joining at scoring. `run-all` executes responses first (a valid
+topological order) so behavior-grounded hypothesis methods can observe real
+responses on a fresh run.
 
 | CLI stage | What it does | Paper |
 |-----------|--------------|-------|
 | `dtreat prompts` | Load both community prompt sets, validate; **instruction annotation** either provided or LLM-extracted (two-pass: phrase extraction → cross-community canonicalization); optional **frequency matching** by subsampling to identical instruction distributions; **comparability check** (TV distance + χ²) | §3.1, §4.1, Eq 1–3 |
 | `dtreat distinguish` | **Input-side distinguishability** of the two prompt sets via the vendored `distinguish/` pipeline (lexical / syntactic / semantic / distributional / topical dimensions, `paper/distinguishability.pdf`) | dist. §3.4 |
-| `dtreat hypotheses` | ALL hypothesis-generation methods run by default — **a-priori** (zero_context, two_stage), **literature** (bundled + **RAG-retrieved arXiv abstracts** for the pair/domain), **prompt-subsample grounding**, **behavior-subsample grounding** (response_grounded; engages on iterative re-runs once responses exist — the pipeline order stays Fig. 1's), and **seeds** — union scored once, every axis tagged with the method(s) that proposed it; per-method comparison lands in the analysis report | §4.2 |
+| `dtreat hypotheses` | ALL hypothesis-generation methods run by default — **a-priori** (zero_context, two_stage), **literature** (bundled + **RAG-retrieved arXiv abstracts** for the pair/domain), **prompt-subsample grounding**, **behavior-subsample grounding** (response_grounded), and **seeds** — union scored once, every axis tagged with the method(s) that proposed it; per-method comparison lands in the analysis report | §4.2 |
 | `dtreat responses` | Sample K responses per prompt from the target LLM; refusals recorded as first-class data; resumable | §4.3, Eq 4 |
 | `dtreat score` | **Judge panel** (one or many models, majority/unanimous/any aggregation) scores every response on every axis with rubrics (community never disclosed); per-judge verdicts retained | §2.3, §4.4, Eq 5–7 |
 | `dtreat calibrate-judge` | Judge validation: pairwise **Cohen's κ**, panel **Fleiss' κ**, self-consistency flip rates under reseeding, optional gold-label accuracy | §5.3 |

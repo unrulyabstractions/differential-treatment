@@ -248,11 +248,10 @@ def _helper_study(args) -> int:
     if not paths.prompt_sets_path.exists():
         run_prompt_collection(config, paths)
     _archive_replaced_artifacts(paths)
-    # Paper order (Fig 1): hypotheses before responses. The response_grounded
-    # condition self-skips on a fresh run and engages on iterative re-runs
-    # where stage-3 responses already exist.
-    report, union = run_helper_conditions(config, paths, conditions)
+    # Stages 2 and 3 are parallel DAG branches (both need only stage 1);
+    # responses run first so behavior-grounded generation can observe them.
     run_response_collection(config, paths)
+    report, union = run_helper_conditions(config, paths, conditions)
     run_response_scoring(config, paths)
     analysis = run_treatment_analysis(config, paths)
     report.downstream = summarize_downstream(report, union, analysis.axes)

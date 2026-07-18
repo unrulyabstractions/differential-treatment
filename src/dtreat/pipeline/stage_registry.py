@@ -35,6 +35,10 @@ class StageDefinition:
     runner: Callable[[ExperimentConfig, RunDirectoryPaths], Any]
 
 
+# Fig. 1 is a DAG, not a chain: hypothesis generation (2) and response
+# collection (3) both depend only on stage 1 and join at scoring (4).
+# run-all executes 3 before 2 — a valid topological order — so
+# behavior-grounded hypothesis methods can observe real responses.
 PIPELINE_STAGES: list[StageDefinition] = [
     StageDefinition(
         name="prompts",
@@ -43,16 +47,16 @@ PIPELINE_STAGES: list[StageDefinition] = [
         runner=run_prompt_collection,
     ),
     StageDefinition(
-        name="hypotheses",
-        title="Hypothesis generation (helper LLM, all methods)",
-        paper_section="§4.2",
-        runner=run_hypothesis_generation,
-    ),
-    StageDefinition(
         name="responses",
         title="Response collection (target LLM)",
         paper_section="§4.3",
         runner=run_response_collection,
+    ),
+    StageDefinition(
+        name="hypotheses",
+        title="Hypothesis generation (helper LLM, all methods)",
+        paper_section="§4.2",
+        runner=run_hypothesis_generation,
     ),
     StageDefinition(
         name="score",
