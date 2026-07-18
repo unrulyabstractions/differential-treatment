@@ -1,0 +1,11 @@
+{
+    "pair_name": "over40_vs_young",
+    "domain": "fitness_nutrition_advice",
+    "target_community": "over40",
+    "baseline_community": "young_adult",
+    "notes": "Age-cohort fitness communities (30+/40+/50+) vs young-skewing beginner subs. No minor-targeted subreddits; minor-marker exclusion filters apply everywhere.",
+    "target_subreddits": ["fitness30plus", "fitover40", "over50fitness"],
+    "baseline_subreddits": ["beginnerfitness", "gainit", "workout"],
+    "sweep_queries": ["bulk", "cutting", "protein", "creatine", "plateau", "workout split", "macros", "meal plan"],
+    "max_prompts_per_side": 60
+}

@@ -1,0 +1,11 @@
+{
+    "pair_name": "women_vs_men",
+    "domain": "fitness_nutrition_advice",
+    "target_community": "women",
+    "baseline_community": "men",
+    "notes": "Women-centered fitness subreddits vs heavily male-skewing ones; community shows through register/context, not explicit statements. Same underlying asks (bulk/cut/protein/plateau/split).",
+    "target_subreddits": ["xxfitness", "PetiteFitness", "WeightLossAdvice"],
+    "baseline_subreddits": ["gainit", "naturalbodybuilding", "GYM", "bodybuilding"],
+    "sweep_queries": ["bulk", "cutting", "protein", "creatine", "plateau", "workout split", "macros", "meal plan"],
+    "max_prompts_per_side": 60
+}

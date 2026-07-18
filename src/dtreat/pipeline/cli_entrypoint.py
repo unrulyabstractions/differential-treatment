@@ -15,6 +15,7 @@ from dtreat.common.file_io import save_json
 from dtreat.common.run_directory_paths import RunDirectoryPaths
 from dtreat.diagnostics.artifact_inspection import inspect_path
 from dtreat.diagnostics.cost_estimation import print_cost_estimate
+from dtreat.diagnostics.cross_run_comparison import run_cross_run_comparison
 from dtreat.diagnostics.llm_trace_reporting import print_trace_report
 from dtreat.diagnostics.run_validation import print_run_status, validate_run
 from dtreat.server.debug_server_app import serve_debug_ui
@@ -146,6 +147,20 @@ def _build_parser() -> argparse.ArgumentParser:
         help="judge model specs to compare (e.g. gpt-4o-mini claude-haiku-4-5 gemini-3.5-flash)",
     )
     judge_study.set_defaults(handler=_judge_study)
+
+    compare_runs = subparsers.add_parser(
+        "compare-runs", help="cross-group comparison table over completed runs"
+    )
+    compare_runs.add_argument("--runs", nargs="+", required=True, help="run directories")
+    compare_runs.add_argument(
+        "--out", default="out/comparisons", help="output directory for the report"
+    )
+    compare_runs.set_defaults(
+        handler=lambda args: (
+            run_cross_run_comparison([Path(r) for r in args.runs], Path(args.out)),
+            0,
+        )[1]
+    )
 
     serve = subparsers.add_parser("serve", help="debug/visualization server + UI")
     serve.add_argument("--runs-root", default="out/runs", help="directory containing runs")

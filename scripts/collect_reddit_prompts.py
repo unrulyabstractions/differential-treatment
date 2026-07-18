@@ -10,11 +10,13 @@ usernames collected. Instruction ids are left empty — stage 1's extraction
 mode (`annotate_instructions: "extract"`) infers and matches them.
 
 Usage:
-    uv run python scripts/collect_reddit_prompts.py
+    uv run python scripts/collect_reddit_prompts.py                 # LGBTQ+ pair (curated + sweeps)
+    uv run python scripts/collect_reddit_prompts.py --pair data/group_pairs/women_vs_men.json
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 import time
@@ -152,17 +154,28 @@ def _sweep_usable(post: dict) -> str | None:
 
 def sweep_side(existing: list[dict], subreddits: list[str], prefix: str) -> list[dict]:
     """Top up one side with keyword sweeps until MAX_PROMPTS_PER_SIDE."""
+    return sweep_side_capped(existing, subreddits, prefix, SWEEP_QUERIES, MAX_PROMPTS_PER_SIDE)
+
+
+def sweep_side_capped(
+    existing: list[dict],
+    subreddits: list[str],
+    prefix: str,
+    queries: list[str],
+    cap: int,
+) -> list[dict]:
+    """Keyword sweeps over subreddits until `cap` prompts collected."""
     seen_ids = {p["prompt_id"].split("_")[-1] for p in existing}
     prompts = list(existing)
-    for query in SWEEP_QUERIES:
+    for query in queries:
         for subreddit in subreddits:
-            if len(prompts) >= MAX_PROMPTS_PER_SIDE:
+            if len(prompts) >= cap:
                 return prompts
             data = fetch_json(SWEEP_URL.format(subreddit=subreddit, query=query))
             if data is None:
                 continue
             for post in data.get("data", []):
-                if len(prompts) >= MAX_PROMPTS_PER_SIDE:
+                if len(prompts) >= cap:
                     break
                 post_id = post.get("id", "")
                 text = _sweep_usable(post)
@@ -180,7 +193,43 @@ def sweep_side(existing: list[dict], subreddits: list[str], prefix: str) -> list
     return prompts
 
 
+def collect_pair(spec_path: Path) -> None:
+    """Collect both sides of a group pair from a committed pair spec.
+
+    Specs hold only subreddit lists and queries (no user content), so they
+    are safe to commit; the collected prompt files stay LOCAL ONLY.
+    """
+    spec = load_json(spec_path)
+    pair = spec["pair_name"]
+    cap = int(spec.get("max_prompts_per_side", MAX_PROMPTS_PER_SIDE))
+    for side, community in (("target", spec["target_community"]),
+                            ("baseline", spec["baseline_community"])):
+        subreddits = spec[f"{side}_subreddits"]
+        prefix = f"{side[0]}_{pair}"
+        print(f"Collecting {pair}/{community} from {subreddits} (cap {cap})...")
+        prompts = sweep_side_capped(
+            [], subreddits, prefix, spec.get("sweep_queries", SWEEP_QUERIES), cap
+        )
+        print(f"  {len(prompts)} prompts")
+        out_path = OUT_DIR / f"real_{pair}_{community}.json"
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+        save_json(
+            {"community": community, "domain": spec["domain"], "prompts": prompts},
+            out_path,
+        )
+        print(f"wrote {out_path} ({len(prompts)} prompts) — LOCAL ONLY")
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--pair", type=Path, default=None,
+        help="group-pair spec JSON (default: built-in LGBTQ+ pair with curated ids)",
+    )
+    args = parser.parse_args()
+    if args.pair:
+        collect_pair(args.pair)
+        return
     print("Collecting target-community prompts (curated ids + sweeps)...")
     target_prompts = collect_by_ids(TARGET_POST_IDS, "t_reddit")
     target_prompts = sweep_side(target_prompts, TARGET_SWEEP_SUBREDDITS, "t_reddit")
