@@ -412,6 +412,35 @@ strongest women-pair signal to date, still shy of 0.05.
 
 RESULT: VERIFIED (mock E2E + artifacts read directly; live run numbers from
 its own report).
+
+## 2026-07-18 — Polish iterations (deadline-bounded loop)
+
+WHAT: Stage polish round: camelCase axis-id fix, fuzzy + stemmed union
+dedup, C2ST midpoint tie-fill, helper diversity rule, judge-prompt
+experiment, JSON missing-comma repair, UI provenance cards.
+
+HOW + findings (all observed directly):
+- Judge-prompt experiment vs exact mock ground truth (320 real-judge
+  judgments): baseline protocol 98.5% accuracy (gpt-4o-mini), fancier
+  variants equal or worse, 0 unparsed anywhere — protocol validated by
+  measurement.
+- Fresh women run: C2ST midpoint fill drops 0 rows (was 158+); union-level
+  behavior C2ST 0.689 [0.577, 0.783] ABOVE CHANCE — the gender pair's diffuse
+  differentiation is now measurable at distribution level.
+- Live-caught bug: literature_rag produced 0 axes because the model omitted
+  a JSON comma; extractor now repairs missing commas at value boundaries
+  (regression test with the exact pattern; the actual cached reply re-parses
+  to 8 entries); zero-parse warning added.
+- Complete 6-method run after the fix: response_grounded leads AGAIN
+  (0.167 bits vs 0.177 in the prior independent axis draw — the
+  behavior-grounded advantage REPLICATES at ~2-3× a-priori methods);
+  union C2ST 0.757; still 0 significant single axes across ~90 distinct
+  axes tried over three draws — women/men differentiation is robustly
+  diffuse for gpt-4o-mini.
+- Dedup now stems inflections (recommendation_of_supplements ~
+  recommends_supplements merge; unit-tested). 80 tests + lint green.
+
+RESULT: VERIFIED.
 ## 2026-07-17 — Web research: seed prompts for fitness/nutrition bias-audit dataset
 - WHAT: Verbatim Reddit question prompts (LGBTQ+ vs general/cis-het fitness communities) collected for the report delivered in-chat (not written to a file). Sources: PullPush API (api.pullpush.io) queries over r/FTMFitness, r/askgaybros, r/gaybros, r/MtF, r/butchlesbians, r/actuallesbians, r/beginnerfitness, r/naturalbodybuilding, r/gainit, r/GYM, r/Fitness, r/bodybuilding.
 - HOW: For ~20 quotes used in the report, re-fetched the raw PullPush JSON with curl and printed title/selftext/permalink directly (bypassing WebFetch's summarizer model) and compared strings: FTMFitness (5 posts), askgaybros (5), beginnerfitness (4), MtF (3), butchlesbians (3), gainit (1), naturalbodybuilding (2). All matched verbatim. RESULT: VERIFIED.

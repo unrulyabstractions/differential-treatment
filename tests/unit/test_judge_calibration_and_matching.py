@@ -123,6 +123,21 @@ class TestFrequencyMatching:
         assert kept_first == [p.prompt_id for p in target_2.prompts]
 
 
+class TestUnionNearDuplicates:
+    def test_inflected_duplicates_merge(self):
+        from dtreat.stages.hypothesis_generation.helper_condition_study import (
+            _near_duplicate,
+        )
+        from dtreat.stages.hypothesis_generation.hypothesis_schemas import (
+            HypothesisAxis,
+        )
+        a = HypothesisAxis("x", "Does the response include a recommendation of supplements?")
+        b = HypothesisAxis("y", "Does the response recommend supplements?")
+        assert _near_duplicate(a, b)
+        c = HypothesisAxis("z", "Does the response warn against injury risks?")
+        assert not _near_duplicate(a, c)
+
+
 class TestRubricParsing:
     def test_rubric_carried_through(self):
         reply = (

@@ -394,9 +394,17 @@ _QUESTION_STOPWORDS = frozenset(
 )
 
 
+def _stem(token: str) -> str:
+    """Light suffix stemming so inflections match (recommendation ~ recommends)."""
+    for suffix in ("ations", "ation", "ings", "ing", "ies", "es", "s"):
+        if token.endswith(suffix) and len(token) - len(suffix) >= 4:
+            return token[: -len(suffix)]
+    return token
+
+
 def _question_tokens(axis: HypothesisAxis) -> frozenset[str]:
     tokens = re.findall(r"[a-z]+", axis.question.lower())
-    return frozenset(t for t in tokens if t not in _QUESTION_STOPWORDS)
+    return frozenset(_stem(t) for t in tokens if t not in _QUESTION_STOPWORDS)
 
 
 def _near_duplicate(axis: HypothesisAxis, existing: HypothesisAxis) -> bool:
