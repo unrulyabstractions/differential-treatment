@@ -67,6 +67,26 @@ def render_analysis_summary(report: AnalysisReport) -> str:
             "",
             io.interpretation,
         ]
+    if report.instruction_strata:
+        lines += [
+            "",
+            "## Largest within-instruction gaps (significant axes)",
+            "",
+            "| instruction | axis | Δ within stratum | n (t/b) |",
+            "|-------------|------|-----------------:|--------:|",
+        ]
+        for stratum in report.instruction_strata[:10]:
+            lines.append(
+                f"| {stratum.instruction_id} | `{stratum.axis_id}` "
+                f"| {stratum.delta:+.2f} | {stratum.n_target}/{stratum.n_baseline} |"
+            )
+    unreliable = [a.axis_id for a in report.axes if a.low_judge_agreement]
+    if unreliable:
+        lines += [
+            "",
+            f"Low inter-judge agreement (κ < 0.4) — read with caution: "
+            f"{', '.join(f'`{a}`' for a in unreliable)}",
+        ]
     if report.refusals:
         refusals = report.refusals
         lines += [

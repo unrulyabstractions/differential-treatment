@@ -18,7 +18,7 @@ from dtreat.common.discrete_information import (
     normalize_profile,
 )
 from dtreat.common.experiment_config import ExperimentConfig
-from dtreat.common.file_io import load_jsonl, save_json
+from dtreat.common.file_io import load_json, load_jsonl, save_json
 from dtreat.common.run_directory_paths import RunDirectoryPaths
 from dtreat.stages.hypothesis_generation.hypothesis_schemas import HypothesisSet
 from dtreat.stages.prompt_distinguishability.distinguish_bridge_stage import (
@@ -33,6 +33,7 @@ from dtreat.stages.response_scoring.scored_response_schemas import ScoredRespons
 from .analysis_report_schemas import (
     AnalysisReport,
     AxisResult,
+    InstructionStratumGap,
     PromptBehaviorRates,
     RefusalAnalysis,
 )
@@ -83,6 +84,7 @@ def run_treatment_analysis(
         refusals=_refusal_analysis(paths, target_name),
         input_output=None,
         prompt_rates=_prompt_rates(scored, axis_ids),
+        instruction_strata=_instruction_strata(scored, axes, target_name),
         n_permutations=config.n_permutations,
         permutation_unit=config.permutation_unit,
         fdr_alpha=config.fdr_alpha,
@@ -91,6 +93,7 @@ def run_treatment_analysis(
     )
 
     report.input_output = _input_output_comparison(paths, report)
+    _join_judge_reliability(paths, report)
     save_json(report.to_dict(), paths.analysis_report_path)
     paths.analysis_summary_path.parent.mkdir(parents=True, exist_ok=True)
     paths.analysis_summary_path.write_text(render_analysis_summary(report))
@@ -231,6 +234,72 @@ def _refusal_analysis(paths: RunDirectoryPaths, target_name: str) -> RefusalAnal
         baseline_rate=baseline_refused / len(baseline),
         fisher_p_value=float(p_value),
     )
+
+
+LOW_AGREEMENT_KAPPA = 0.4  # below "moderate" — verdicts on this axis are noisy
+
+
+def _join_judge_reliability(paths: RunDirectoryPaths, report: AnalysisReport) -> None:
+    """Attach per-axis inter-judge kappa from the calibration artifact (when a
+    panel calibration exists) and flag unreliable axes."""
+    if not paths.judge_calibration_path.exists():
+        return
+    calibration = load_json(paths.judge_calibration_path)
+    pairs = calibration.get("pair_agreements", [])
+    if not pairs:
+        return
+    for axis in report.axes:
+        kappas = [
+            pair["kappa_by_axis"][axis.axis_id]
+            for pair in pairs
+            if axis.axis_id in pair.get("kappa_by_axis", {})
+        ]
+        if kappas:
+            axis.judge_kappa = round(min(kappas), 4)
+            axis.low_judge_agreement = axis.judge_kappa < LOW_AGREEMENT_KAPPA
+
+
+def _instruction_strata(
+    scored: list[ScoredResponse], axes: list[AxisResult], target_name: str
+) -> list[InstructionStratumGap]:
+    """Within-instruction gaps for significant axes: catches treatment that
+    concentrates in one kind of ask (per-task partitioning, 2410.19803)."""
+    significant_ids = [axis.axis_id for axis in axes if axis.significant]
+    if not significant_ids:
+        return []
+    by_instruction: dict[str, list[ScoredResponse]] = {}
+    for record in scored:
+        by_instruction.setdefault(record.instruction_id, []).append(record)
+    strata = []
+    for instruction_id, records in sorted(by_instruction.items()):
+        for axis_id in significant_ids:
+            target_verdicts = [
+                r.verdicts[axis_id]
+                for r in records
+                if r.community == target_name and axis_id in r.verdicts
+            ]
+            baseline_verdicts = [
+                r.verdicts[axis_id]
+                for r in records
+                if r.community != target_name and axis_id in r.verdicts
+            ]
+            if len(target_verdicts) < 3 or len(baseline_verdicts) < 3:
+                continue
+            strata.append(
+                InstructionStratumGap(
+                    instruction_id=instruction_id,
+                    axis_id=axis_id,
+                    n_target=len(target_verdicts),
+                    n_baseline=len(baseline_verdicts),
+                    delta=round(
+                        sum(target_verdicts) / len(target_verdicts)
+                        - sum(baseline_verdicts) / len(baseline_verdicts),
+                        4,
+                    ),
+                )
+            )
+    strata.sort(key=lambda s: -abs(s.delta))
+    return strata[:20]
 
 
 def _prompt_rates(scored: list[ScoredResponse], axis_ids: list[str]) -> list[PromptBehaviorRates]:

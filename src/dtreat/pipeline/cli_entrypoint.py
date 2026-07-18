@@ -248,8 +248,10 @@ def _helper_study(args) -> int:
     if not paths.prompt_sets_path.exists():
         run_prompt_collection(config, paths)
     _archive_replaced_artifacts(paths)
-    report, union = run_helper_conditions(config, paths, conditions)
+    # responses are axis-independent; collecting them FIRST lets the
+    # response_grounded condition read observed behavior (2410.19803)
     run_response_collection(config, paths)
+    report, union = run_helper_conditions(config, paths, conditions)
     run_response_scoring(config, paths)
     analysis = run_treatment_analysis(config, paths)
     report.downstream = summarize_downstream(report, union, analysis.axes)

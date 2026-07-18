@@ -26,6 +26,24 @@ class AxisResult(BaseSchema):
     significant: bool  # retained after FDR control
     info_bits: float  # I_j mutual information (Eq 13)
     insufficient_data: bool = False
+    # inter-judge agreement for this axis (from judge calibration, when a
+    # panel ran): low agreement means the axis wording is unreliable and its
+    # verdict should be read with caution (2410.19803: LMRA reliability is
+    # dimension-dependent)
+    judge_kappa: float | None = None
+    low_judge_agreement: bool = False
+
+
+@dataclass
+class InstructionStratumGap(BaseSchema):
+    """One axis's gap WITHIN one instruction stratum (2410.19803: bias
+    concentrates in specific tasks and dilutes in the aggregate)."""
+
+    instruction_id: str
+    axis_id: str
+    n_target: int
+    n_baseline: int
+    delta: float
 
 
 @dataclass
@@ -77,6 +95,8 @@ class AnalysisReport(BaseSchema):
     c2st: ClassifierTwoSampleResult | None = None
     refusals: RefusalAnalysis | None = None
     prompt_rates: list[PromptBehaviorRates] = field(default_factory=list)
+    # largest within-stratum gaps for significant axes (top strata by |delta|)
+    instruction_strata: list[InstructionStratumGap] = field(default_factory=list)
     input_output: InputOutputComparison | None = None
     n_permutations: int = 0
     permutation_unit: str = "prompt"

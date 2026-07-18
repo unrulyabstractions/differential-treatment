@@ -185,6 +185,22 @@ candidates: less recovery emphasis Δ=−0.18, more strength-training push
 +0.16, all q≈0.43): the Λ* discovery gap made concrete. Age-coded voice
 produces essentially no behavioral difference at this scale.
 
+## Method lineage
+
+Beyond the two papers in `paper/`, the pipeline adopts three insights from
+Eloundou et al., *First-Person Fairness in Chatbots* (arXiv:2410.19803):
+**response-grounded axis discovery** (`helper-study` condition
+`response_grounded` — axes enumerated from observed response differences,
+their Bias Enumeration Algorithm, which targets exactly the case where
+behavior is separable but a-priori axes miss it), **per-task partitioning**
+(within-instruction stratum gaps in the analysis report — bias concentrated
+in one kind of ask no longer dilutes in the aggregate), and
+**dimension-dependent judge reliability** (per-axis inter-judge κ joined into
+the analysis; axes with κ < 0.4 are flagged as unreliable). Where they
+measure name-based counterfactuals on fixed prompts, this pipeline measures
+naturally-voiced prompts — complementary designs: theirs isolates causation,
+ours preserves ecological validity.
+
 ## Notes
 
 - The case-study prompts and communities are **fictional and invented** for
