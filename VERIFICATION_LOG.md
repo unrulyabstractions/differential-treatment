@@ -439,6 +439,12 @@ HOW + findings (all observed directly):
   diffuse for gpt-4o-mini.
 - Dedup now stems inflections (recommendation_of_supplements ~
   recommends_supplements merge; unit-tested). 80 tests + lint green.
+- UI provenance verified by screenshot: multi-source chips show cross-method
+  merges (recommendation_of_supplements: zero_context + literature_rag);
+  46-axis Δ chart renders; label gutter widened and RE-VERIFIED by screenshot
+  (full ids untruncated). Summary readability: ns tail collapses (women
+  summary: 8 table rows + "…and 38 further non-significant axes" line,
+  observed in the regenerated artifact).
 
 RESULT: VERIFIED.
 ## 2026-07-17 — Web research: seed prompts for fitness/nutrition bias-audit dataset

@@ -20,8 +20,16 @@ def render_analysis_summary(report: AnalysisReport) -> str:
         "| axis | question | z_target | z_baseline | Δ | p | q | significant | I (bits) |",
         "|------|----------|---------:|-----------:|--:|--:|--:|:-----------:|---------:|",
     ]
-    for axis in _sorted_axes(report):
+    shown, collapsed = _shown_and_collapsed(report)
+    for axis in shown:
         lines.append(_axis_row(axis))
+    if collapsed:
+        lines += [
+            "",
+            f"…and {len(collapsed)} further non-significant axes (all q ≥ "
+            f"{min(axis.q_value for axis in collapsed):.2f}; full table in "
+            "analysis_report.json).",
+        ]
     lines += [
         "",
         f"Permutation test: {report.n_permutations} permutations at the "
@@ -145,6 +153,25 @@ def _sorted_axes(report: AnalysisReport) -> list[AxisResult]:
         report.axes,
         key=lambda axis: (not axis.significant, -axis.info_bits, axis.p_value),
     )
+
+
+MAX_NS_ROWS = 8  # large unions: show every significant axis + this many ns
+
+
+def _shown_and_collapsed(
+    report: AnalysisReport,
+) -> tuple[list[AxisResult], list[AxisResult]]:
+    """All significant axes plus the most informative non-significant ones;
+    the ns long tail collapses to one line so 40-axis unions stay readable."""
+    ordered = _sorted_axes(report)
+    shown, ns_shown, collapsed = [], 0, []
+    for axis in ordered:
+        if axis.significant or ns_shown < MAX_NS_ROWS:
+            shown.append(axis)
+            ns_shown += int(not axis.significant)
+        else:
+            collapsed.append(axis)
+    return shown, collapsed
 
 
 def _fmt_opt(value: float | None) -> str:
