@@ -566,3 +566,21 @@ at line 228, then compared arithmetically at treatment_analysis_stage.py:269).
 
 RESULT: VERIFIED — core defect is real and empirically confirmed; the named crash site
 (AnalysisReport.from_json) is one step hypothetical since it currently has no caller.
+
+## 2026-07-18 — Polish loop closed (5-hour deadline per user order)
+
+WHAT: Deadline-bounded iterate/polish loop (02:30–07:30): five ticks of
+stage-internal debugging, prompt engineering, and verification.
+
+DELIVERED (each verified in its tick's entry): judge-prompt experiment with
+exact ground truth (baseline protocol wins, 98.5%); C2ST midpoint tie-fill
+(0 dropped rows; union-level separability measurable); fuzzy + stemmed union
+dedup; camelCase axis-id fix; JSON missing-comma repair (live-caught bug,
+regression-tested); zero-parse warnings; helper diversity rule +
+instruction-types input (§4.2 fidelity); replicated finding that
+behavior-grounded generation captures 2-3× a-priori methods; UI provenance
+chips, per-method card, widened Δ gutter, collapsed ns tails — all
+screenshot-verified. 80 tests + lint green throughout; every tick committed
+and pushed.
+
+RESULT: LOOP CLOSED on schedule; final wakeup past 07:30 stops itself.
