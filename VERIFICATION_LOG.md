@@ -347,6 +347,46 @@ Verifier nuance adopted: manifest `unparsed_verdicts` is panel TIES, not
 parse failures — schema docstring + UI label clarified.
 
 RESULT: VERIFIED (all seven verification items, exact recomputation).
+
+## 2026-07-17 — Cross-group pair runs (women_vs_men, over40_vs_young) + incident
+
+WHAT: Two new group pairs collected (60/side each) and run end-to-end in the
+same fitness domain; cross-run comparison; independent verifier over both.
+
+VERIFIER RESULTS (recomputed from raw artifacts): over40_vs_young fully
+VERIFIED (40/side TV=0.0; 240=80×3 responses; kappa 0.84313454 exact; 0/8
+significant; C2ST 0.54166667 not above chance; input 7/20 significant, best
+0.6125). women_vs_men stages 1/3/4 + input side VERIFIED (kappa 0.84447932
+exact; input 10/20, best 0.7375); its ORIGINAL 8-axis stage-5 report (0/8
+significant; behavior C2ST 0.700, ci_low 0.54570 > majority 0.50376,
+above_chance TRUE) was verified on disk by the verifier BEFORE being
+overwritten.
+
+INCIDENT (my fault): I launched a helper-study union re-run on the same run
+dir while the verifier was reading it, destroying the 8-axis stage-5 report
+(out/ has no git backup). The verifier's report preserves the verified
+numbers. Guards added: helper-study now archives replaced artifacts before
+overwriting; and I will not mutate a run under active verification again.
+
+BUG FOUND BY THE INCIDENT + FIXED: stage-4 resumability treated stored
+records as valid for a CHANGED axis set (helper-study union axes were never
+judged — 24/32 axes had zero data, three conditions showed info=0.000
+exactly). A first manifest-comparison fix failed because the buggy
+intermediate run had already overwritten the manifest with the new axis list;
+the durable fix is per-record axis-coverage (a record is reusable only if
+verdicts ∪ tie-list cover the current axes). Re-run verified: observed
+"240 stored records do not cover the current axis set — re-judging", then
+32/32 axes with data. Corrected women union results READ from the report:
+0/32 significant (best q=0.434: emphasis_on_recovery Δ=−0.18,
+personalized_affirmations Δ=−0.05); union C2ST unreliable (212/240 rows
+dropped by ties) → signal-usage now gated on output evidence (a noisy C2ST
+had produced a nonsense 164% ratio; comparison now shows usage only for
+runs with real output evidence).
+
+RESULT: over40 run VERIFIED; women run VERIFIED across stages with the
+8-axis stage-5 conclusions preserved via the verifier's direct observation
+and the archived comparison; corrected 32-axis artifacts verified by direct
+read; 78 tests + lint green after all fixes.
 ## 2026-07-17 — Web research: seed prompts for fitness/nutrition bias-audit dataset
 - WHAT: Verbatim Reddit question prompts (LGBTQ+ vs general/cis-het fitness communities) collected for the report delivered in-chat (not written to a file). Sources: PullPush API (api.pullpush.io) queries over r/FTMFitness, r/askgaybros, r/gaybros, r/MtF, r/butchlesbians, r/actuallesbians, r/beginnerfitness, r/naturalbodybuilding, r/gainit, r/GYM, r/Fitness, r/bodybuilding.
 - HOW: For ~20 quotes used in the report, re-fetched the raw PullPush JSON with curl and printed title/selftext/permalink directly (bypassing WebFetch's summarizer model) and compared strings: FTMFitness (5 posts), askgaybros (5), beginnerfitness (4), MtF (3), butchlesbians (3), gainit (1), naturalbodybuilding (2). All matched verbatim. RESULT: VERIFIED.
