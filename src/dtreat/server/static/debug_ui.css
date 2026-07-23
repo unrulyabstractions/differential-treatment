@@ -161,3 +161,10 @@ pre.raw {
 .muted { color: var(--text-muted); }
 .mono { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
 details summary { cursor: pointer; color: var(--text-secondary); }
+
+#s4-inspector button {
+  font: inherit; padding: 4px 12px; cursor: pointer;
+  border: 1px solid var(--border); border-radius: 999px;
+  background: transparent; color: var(--text-primary);
+}
+#s4-inspector button:hover { border-color: var(--series-target); }

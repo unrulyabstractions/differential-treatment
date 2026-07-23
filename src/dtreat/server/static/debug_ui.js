@@ -284,6 +284,7 @@ function readHash() {
   const params = new URLSearchParams(location.hash.slice(1));
   if (params.get("run")) state.run = params.get("run");
   if (params.get("tab") && renderers[params.get("tab")]) state.tab = params.get("tab");
+  if (params.get("response")) state.deepLinkResponse = params.get("response");
 }
 
 async function loadRuns() {
@@ -413,6 +414,7 @@ const renderers = {
   async stage4() {
     const overview = await api(`/api/runs/${state.run}/overview`);
     const tName = targetName(overview.config);
+    const bName = baselineName(overview.config);
     const data = await api(`/api/runs/${state.run}/stage4?limit=30`);
     const m = data.manifest;
     tiles([
@@ -451,17 +453,103 @@ const renderers = {
       }
       for (const note of cal.notes || []) calCard.innerHTML += `<p class="muted">${esc(note)}</p>`;
     }
-    const judged = card("Judged responses");
-    judged.innerHTML += `<table class="data"><tr><th>response</th><th>community</th>` +
-      axes.map(a => `<th>${esc(a)}</th>`).join("") + `<th>raw</th></tr>` +
-      data.records.map(r => `<tr><td class="mono">${esc(r.response_id)}</td>
-        <td><span class="chip ${r.community === tName ? "target" : "baseline"}">${esc(r.community)}</span></td>` +
-        axes.map(a => {
-          const v = r.verdicts[a];
-          return `<td>${v === undefined ? '<span class="chip warn">?</span>' : v ? "✓" : "·"}</td>`;
-        }).join("") +
-        `<td><details><summary>raw</summary><pre class="raw">${esc(Object.entries(r.raw_judge_replies || {}).map(([j, reply]) => j + ":\n" + reply).join("\n\n"))}</pre></details></td></tr>`).join("") +
-      `</table>`;
+    const judged = card("Response inspector",
+      "filter, click a row to inspect prompt + response + every judge's verdict; ◀ ▶ steps through the filtered set");
+    judged.innerHTML += `
+      <div class="controls">
+        <select id="s4-community"><option value="">all communities</option>
+          <option>${esc(tName)}</option><option>${esc(bName)}</option></select>
+        <select id="s4-axis"><option value="">any axis</option>
+          ${axes.map(a => `<option>${esc(a)}</option>`).join("")}</select>
+        <select id="s4-verdict"><option value="">any verdict</option>
+          <option value="yes">YES</option><option value="no">NO</option>
+          <option value="tie">tie/unparsed</option></select>
+        <input id="s4-search" placeholder="search response text…">
+      </div>
+      <div id="s4-table"></div>
+      <div id="s4-inspector"></div>`;
+
+    const inspectorState = { ids: [], index: -1 };
+    const drawInspector = async () => {
+      const host = $("#s4-inspector");
+      if (inspectorState.index < 0) { host.innerHTML = ""; return; }
+      const responseId = inspectorState.ids[inspectorState.index];
+      host.innerHTML = `<p class="muted">loading ${esc(responseId)}…</p>`;
+      try {
+        const d = await api(`/api/runs/${state.run}/response/${encodeURIComponent(responseId)}`);
+        const judges = Object.keys(d.raw_judge_replies || {});
+        const verdictCell = v => v === true ? "✓ YES" : v === false ? "· NO" : "—";
+        host.innerHTML = `
+          <div class="card" style="margin-top:12px">
+            <h2>${esc(d.response_id)}
+              <span class="chip ${d.community === tName ? "target" : "baseline"}">${esc(d.community)}</span>
+              <span class="chip">${esc(d.instruction_id)}</span>
+              ${d.refused ? '<span class="chip warn">refused</span>' : ""}
+            </h2>
+            <p class="desc">${inspectorState.index + 1} of ${inspectorState.ids.length} in filtered set
+              &nbsp; <button id="s4-prev">◀ prev</button> <button id="s4-next">next ▶</button></p>
+            <details open><summary><b>Prompt</b> (${esc(d.prompt_id)})</summary>
+              <pre class="raw">${esc(d.prompt_text)}</pre></details>
+            <details open><summary><b>Response</b></summary>
+              <pre class="raw">${esc(d.response_text)}</pre></details>
+            <h2 style="margin-top:12px">Verdicts</h2>
+            <table class="data"><tr><th>axis</th><th>question</th>
+              ${judges.map(j => `<th>${esc(j)}</th>`).join("")}
+              <th>aggregate</th></tr>` +
+          d.axes.map(a => `<tr${a.tie ? ' style="opacity:.75"' : ""}>
+              <td class="mono" title="${esc(a.rubric)}">${esc(a.axis_id)}<br>
+                ${(a.sources || []).map(s => `<span class="chip">${esc(s)}</span>`).join(" ")}</td>
+              <td>${esc(a.question)}${a.rubric ? `<div class="muted" style="font-size:11px">${esc(a.rubric)}</div>` : ""}</td>
+              ${judges.map(j => `<td>${verdictCell(a.by_judge[j])}</td>`).join("")}
+              <td>${a.tie ? '<span class="chip warn">tie</span>' : verdictCell(a.aggregated)}</td>
+            </tr>`).join("") + `</table>
+            ${judges.map(j => `<details><summary>raw reply — ${esc(j)}</summary>
+              <pre class="raw">${esc(d.raw_judge_replies[j] || "")}</pre></details>`).join("")}
+          </div>`;
+        $("#s4-prev").onclick = () => { if (inspectorState.index > 0) { inspectorState.index--; drawInspector(); } };
+        $("#s4-next").onclick = () => { if (inspectorState.index < inspectorState.ids.length - 1) { inspectorState.index++; drawInspector(); } };
+      } catch (error) { host.innerHTML = `<p class="muted">${esc(error.message)}</p>`; }
+    };
+
+    const drawTable = async () => {
+      const params = new URLSearchParams({
+        limit: "30",
+        community: $("#s4-community").value,
+        axis_id: $("#s4-axis").value,
+        verdict: $("#s4-verdict").value,
+        search: $("#s4-search").value,
+      });
+      const filtered = await api(`/api/runs/${state.run}/stage4?${params}`);
+      inspectorState.ids = filtered.matching_ids || [];
+      $("#s4-table").innerHTML =
+        `<p class="desc">${filtered.total} matching responses (first 30 shown; ties shown as ?)</p>` +
+        `<table class="data"><tr><th>response</th><th>community</th>` +
+        axes.map(a => `<th title="${esc(a)}">${esc(a.slice(0, 12))}${a.length > 12 ? "…" : ""}</th>`).join("") + `</tr>` +
+        filtered.records.map(r => `<tr class="s4-row" data-id="${esc(r.response_id)}" style="cursor:pointer">
+          <td class="mono">${esc(r.response_id)}</td>
+          <td><span class="chip ${r.community === tName ? "target" : "baseline"}">${esc(r.community)}</span></td>` +
+          axes.map(a => {
+            const v = r.verdicts[a];
+            return `<td>${v === undefined ? '<span class="chip warn">?</span>' : v ? "✓" : "·"}</td>`;
+          }).join("") + `</tr>`).join("") + `</table>`;
+      document.querySelectorAll(".s4-row").forEach(row => {
+        row.onclick = () => {
+          inspectorState.index = inspectorState.ids.indexOf(row.dataset.id);
+          drawInspector();
+          row.scrollIntoView({ block: "nearest" });
+        };
+      });
+    };
+    $("#s4-community").onchange = drawTable;
+    $("#s4-axis").onchange = drawTable;
+    $("#s4-verdict").onchange = drawTable;
+    $("#s4-search").oninput = () => { clearTimeout(state._t4); state._t4 = setTimeout(drawTable, 300); };
+    await drawTable();
+    if (state.deepLinkResponse) {
+      inspectorState.index = inspectorState.ids.indexOf(state.deepLinkResponse);
+      state.deepLinkResponse = null;
+      if (inspectorState.index >= 0) await drawInspector();
+    }
   },
 
   async stage5() {

@@ -70,8 +70,23 @@ def create_debug_app(runs_root: Path) -> FastAPI:
         )
 
     @app.get("/api/runs/{run_name}/stage4")
-    def stage4(run_name: str, limit: int = Query(50, le=500), offset: int = 0) -> dict:
-        return _load(run_data_api.stage4_data, _paths(run_name), limit, offset)
+    def stage4(
+        run_name: str,
+        limit: int = Query(50, le=500),
+        offset: int = 0,
+        community: str | None = None,
+        axis_id: str | None = None,
+        verdict: str | None = None,
+        search: str | None = None,
+    ) -> dict:
+        return _load(
+            run_data_api.stage4_data, _paths(run_name), limit, offset,
+            community, axis_id, verdict, search,
+        )
+
+    @app.get("/api/runs/{run_name}/response/{response_id}")
+    def response_detail(run_name: str, response_id: str) -> dict:
+        return _load(run_data_api.response_detail, _paths(run_name), response_id)
 
     @app.get("/api/runs/{run_name}/stage5")
     def stage5(run_name: str) -> dict:

@@ -111,7 +111,15 @@ def stage3_data(
     }
 
 
-def stage4_data(paths: RunDirectoryPaths, limit: int, offset: int) -> dict:
+def stage4_data(
+    paths: RunDirectoryPaths,
+    limit: int,
+    offset: int,
+    community: str | None = None,
+    axis_id: str | None = None,
+    verdict: str | None = None,
+    search: str | None = None,
+) -> dict:
     records = load_jsonl(paths.scored_responses_path)
     manifest = load_json(paths.scoring_manifest_path, default={})
     axis_ids = manifest.get("axis_ids") or sorted(
@@ -147,14 +155,101 @@ def stage4_data(paths: RunDirectoryPaths, limit: int, offset: int) -> dict:
         if paths.judge_calibration_path.exists()
         else None
     )
+
+    filtered = records
+    if community:
+        filtered = [r for r in filtered if r["community"] == community]
+    if axis_id and verdict:
+        if verdict == "tie":
+            filtered = [r for r in filtered if axis_id in r.get("unparsed_axes", [])]
+        else:
+            wanted = verdict == "yes"
+            filtered = [
+                r
+                for r in filtered
+                if r.get("verdicts", {}).get(axis_id) is wanted
+            ]
+    elif verdict == "tie":
+        filtered = [r for r in filtered if r.get("unparsed_axes")]
+    if search:
+        needle = search.lower()
+        response_texts = {
+            record["response_id"]: record.get("text", "")
+            for record in load_jsonl(paths.responses_path, default=[])
+        }
+        filtered = [
+            r
+            for r in filtered
+            if needle in response_texts.get(r["response_id"], "").lower()
+        ]
+
     return {
         "manifest": manifest,
         "axis_ids": axis_ids,
         "per_axis_rates": per_axis_rates,
         "heatmap": heatmap,
         "calibration": calibration,
-        "total": len(records),
-        "records": records[offset : offset + limit],
+        "total": len(filtered),
+        "matching_ids": [r["response_id"] for r in filtered],
+        "records": filtered[offset : offset + limit],
+    }
+
+
+def response_detail(paths: RunDirectoryPaths, response_id: str) -> dict:
+    """Everything about one response: prompt, text, per-judge verdicts,
+    rubrics, raw judge replies — the drill-down unit for going over
+    judgments one by one."""
+    scored = next(
+        (
+            r
+            for r in load_jsonl(paths.scored_responses_path)
+            if r["response_id"] == response_id
+        ),
+        None,
+    )
+    if scored is None:
+        raise FileNotFoundError(f"no scored record for {response_id}")
+    response = next(
+        (
+            r
+            for r in load_jsonl(paths.responses_path)
+            if r["response_id"] == response_id
+        ),
+        {},
+    )
+    prompts = load_json(paths.prompt_sets_path, default={})
+    prompt_text = ""
+    for side in ("target_set", "baseline_set"):
+        for prompt in prompts.get(side, {}).get("prompts", []):
+            if prompt["prompt_id"] == scored["prompt_id"]:
+                prompt_text = prompt["text"]
+    hypothesis_set = load_json(paths.hypothesis_set_path, default={"axes": []})
+    axes = [
+        {
+            "axis_id": axis["axis_id"],
+            "question": axis["question"],
+            "rubric": axis.get("rubric", ""),
+            "sources": axis.get("sources") or [axis.get("source", "")],
+            "aggregated": scored.get("verdicts", {}).get(axis["axis_id"]),
+            "tie": axis["axis_id"] in scored.get("unparsed_axes", []),
+            "by_judge": {
+                judge: verdicts.get(axis["axis_id"])
+                for judge, verdicts in scored.get("verdicts_by_judge", {}).items()
+            },
+        }
+        for axis in hypothesis_set["axes"]
+    ]
+    return {
+        "response_id": response_id,
+        "prompt_id": scored["prompt_id"],
+        "community": scored["community"],
+        "instruction_id": scored.get("instruction_id", ""),
+        "prompt_text": prompt_text,
+        "response_text": response.get("text", ""),
+        "refused": response.get("refused", False),
+        "finish_reason": response.get("finish_reason", ""),
+        "axes": axes,
+        "raw_judge_replies": scored.get("raw_judge_replies", {}),
     }
 
 
